@@ -2,20 +2,12 @@
 #define _PROGRAM_H_
 
 #include <Arduino.h>
-#include "clock.h"
-#include "display.h"
+
 #include "timer1.h"
 #include "timer2.h"
-
-namespace Pin {
-    const uint8_t BUTTON1 = 10;
-    const uint8_t BUTTON2 = 11;
-    const uint8_t BUTTON3 = 12;
-    const uint8_t BUTTON4 = A8;
-
-    const uint8_t CONTRAST = 2;
-    const uint8_t BRIGHTNESS = 3;
-};
+#include "clock.h"
+#include "display.h"
+#include "clock_controller.h"
 
 class Program {
     public:
@@ -32,12 +24,18 @@ class Program {
         void start_timer2();
         
     private:
+        // 100 mS
+        Timer1::FCPU_SCALES _timer1_scale = Timer1::SCALE_64; 
+        uint16_t _timer1_counts = 25000 - 1;
+
+        // 144 mS
+        Timer2::FCPU_SCALES _timer2_scale = Timer2::SCALE_1024;
+        uint16_t _timer2_scale2 = 1;
+        uint8_t _timer2_counts = 225;
+
         Clock _clock;
         Display _display;
-        // Oscillator _oscillator;
-        // DateTime _datetime;
-
-        
+        ClockController _clock_controller{_clock, _display};
 };
 
 #endif // _PROGRAM_H_

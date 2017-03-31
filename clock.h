@@ -21,22 +21,23 @@ class Clock {
         DateTime primary_datetime;
         DateTime secondary_datetime;
 
-        DateTime alaram1_datetime;
-        DateTime alaram2_datetime;
-        DateTime alaram3_datetime;
+        AlarmDateTime alaram1_datetime;
+        AlarmDateTime alaram2_datetime;
+        AlarmDateTime alaram3_datetime;
 
-        DateTime timer1_datetime;
-        DateTime timer2_datetime;
-        DateTime timer3_datetime;
+        TimerDateTime timer1_datetime;
+        TimerDateTime timer2_datetime;
+        TimerDateTime timer3_datetime;
 
         bool hour_signal;
 
-        DateTime stopwatch_datetime;
+        StopwatchTime stopwatch;
 
         void tick(uint16_t tick_size); // tick_size in mS
 
         void next_state();
         Clock::CLOCK_STATES state() const;
+        Clock::CLOCK_STATES state_prev() const;
         
     private:
         Clock::CLOCK_STATES _state_curr{S_CLOCK1};

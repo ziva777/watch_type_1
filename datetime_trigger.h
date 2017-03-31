@@ -3,6 +3,34 @@
 
 #include <stdint.h>
 
+class StopwatchTimeTrigger {
+    public:
+        void hour_flip();
+        void minute_flip();
+        void second_flip();
+        void ms_flip();
+        void on_flip();
+        void stoppped_flip();
+
+        bool time_triggered() const;
+
+        bool hour_triggered() const;
+        bool minute_triggered() const;
+        bool second_triggered() const;
+        bool ms_triggered() const;
+        bool on_triggered() const;
+        bool stoppped_triggered() const;
+
+        void flop(); // flop all
+    private:
+        bool _hour;
+        bool _minute;
+        bool _second;
+        bool _ms;
+        bool _on;
+        bool _stoppped;
+};
+
 class DateTimeTrigger {
 public:
     bool hour_triggered() const;

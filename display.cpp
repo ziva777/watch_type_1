@@ -5,8 +5,18 @@ static const uint8_t _RS_ = 8;
 static const uint8_t _ENABLE_ = 9;
 static const uint8_t _D0_ = 4;
 static const uint8_t _D1_ = 5; 
-static const uint8_t _D2_ = 6; 
+static const uint8_t _D2_ = A7; 
 static const uint8_t _D3_ = 7;
+
+static char *DAY_NAME[7] = {
+    "Su",
+    "Mo",
+    "Tu",
+    "We",
+    "Th",
+    "Fr",
+    "Sa"
+};
 
 Display::Display() 
     : _lcd(_RS_, _ENABLE_, _D0_, _D1_, _D2_, _D3_) {
@@ -67,26 +77,146 @@ void Display::print_time(const DateTime &dt) {
     char buff[16];
 
     memset(buff, 0, 16);
-    sprintf(buff, "%2u:%02u:%02u", 
+    sprintf(buff, " %2u:%02u:%02u ", 
                   dt.hour,
                   dt.minute,
                   dt.second);
-    print_text(0, 4, buff);
+    print_text(0, 3, buff);
 }
+
 void Display::print_date(const DateTime &dt) {
     char buff[16];
     
     memset(buff, 0, 16);
-    sprintf(buff, "%2u.%02u.%04u", 
+    sprintf(buff, "%2u.%02u.%04u %s", 
                   dt.day,
                   dt.month,
-                  dt.year);
+                  dt.year,
+                  DAY_NAME[dt.day_of_week]);
     print_text(1, 3, buff);
 }
 
 void Display::print_datetime(const DateTime &dt) {
     print_time(dt);
     print_date(dt);
+}
+
+void Display::print_alarm1(const AlarmDateTime &dt) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u  %s", 
+                  dt.hour,
+                  dt.minute,
+                  (dt.on ? "on" : "off"));
+    print_text(0, 4, buff);
+
+    memset(buff, ' ', 16);
+    print_text(1, 0, buff);
+}
+
+void Display::print_alarm2(const AlarmDateTime &dt) {
+    print_alarm1(dt);
+}
+
+void Display::print_alarm3(const AlarmDateTime &dt) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u  %s", 
+                  dt.hour,
+                  dt.minute,
+                  (dt.on ? "on" : "off"));
+    print_text(0, 4, buff);
+
+    memset(buff, ' ', 16);
+    buff[10 + 1] = (dt.days[0] ? 'S' : 's');
+    buff[ 4 + 1] = (dt.days[1] ? 'M' : 'm');
+    buff[ 5 + 1] = (dt.days[2] ? 'T' : 't');
+    buff[ 6 + 1] = (dt.days[3] ? 'W' : 'w');
+    buff[ 7 + 1] = (dt.days[4] ? 'T' : 't');
+    buff[ 8 + 1] = (dt.days[5] ? 'F' : 'f');
+    buff[ 9 + 1] = (dt.days[6] ? 'S' : 's');
+    print_text(1, 0, buff);
+}
+
+void Display::print_signal(bool on) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%s       ", (on ? "on" : "off"));
+    print_text(0, 4, buff);
+
+    memset(buff, ' ', 16);
+    print_text(1, 0, buff);
+}
+
+void Display::print_timer1(const TimerDateTime &dt) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u:%02u %s", 
+                  dt.origin_hour,
+                  dt.origin_minute,
+                  dt.origin_second,
+                  (dt.on ? "on" : "off"));
+    print_text(0, 4, buff);
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u:%02u  ", 
+                  dt.hour,
+                  dt.minute,
+                  dt.second);
+    print_text(1, 4, buff);
+}
+
+void Display::print_timer2(const TimerDateTime &dt) {
+    print_timer1(dt);
+}
+
+void Display::print_timer3(const TimerDateTime &dt) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u:%02u %s", 
+                  dt.origin_hour,
+                  dt.origin_minute,
+                  dt.origin_second,
+                  (dt.on ? "on" : "off"));
+    print_text(0, 4, buff);
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%3u %2u:%02u:%02u", 
+                  dt.day,
+                  dt.hour,
+                  dt.minute,
+                  dt.second);
+    print_text(1, 0, buff);
+}
+
+void Display::print_stopwatch(const StopwatchTime &t) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%02u:%02u:%02u.%01u   ", 
+                  t.hour,
+                  t.minute,
+                  t.second,
+                  t.ms / 100);
+    print_text(0, 3, buff);
+
+    memset(buff, 0, 16);
+
+    if (t.stamp.ready)
+      sprintf(buff, " %02u:%02u:%02u.%01u   ", 
+                  t.stamp.hour,
+                  t.stamp.minute,
+                  t.stamp.second,
+                  t.stamp.ms / 100);
+    else
+      sprintf(buff, " --:--:--.-  ");
+      
+    print_text(1, 2, buff);
 }
 
 void Display::set_contrast(uint8_t contrast) {
@@ -97,6 +227,10 @@ void Display::set_contrast(uint8_t contrast) {
 void Display::set_brightness(uint8_t brightness) {
     _brightness = brightness;
     analogWrite(_brightness_pin, _brightness);
+}
+
+void Display::clear() {
+  _lcd.clear();
 }
 
 uint8_t Display::contrast() const {

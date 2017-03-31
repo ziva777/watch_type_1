@@ -36,6 +36,52 @@ static uint8_t MONTH_LENGTH_LEAP[] = {
     31  // 12  December  31 days
 };
 
+void StopwatchTime::tick(uint16_t tick_size) {
+    trigger.flop();
+    _hour_buff = hour;
+    _minute_buff = minute;
+    _second_buff = second;
+    _ms_buff = ms;
+
+    ms += tick_size;
+
+    second += ms / 1000;
+    ms %= 1000;
+
+    minute += second / 60;
+    second %= 60;
+
+    if (minute >= 60) {
+        minute %= 60;
+        ++hour;
+        hour %= 100;
+    }
+
+    if (hour != _hour_buff)
+        trigger.hour_flip();
+
+    if (minute != _minute_buff)
+        trigger.minute_flip();
+
+    if (second != _second_buff)
+        trigger.second_flip();
+
+    if (ms != _ms_buff)
+        trigger.ms_flip();
+}
+
+void StopwatchTime::stamp_it() {
+    stamp.ready = true;
+    stamp.hour = hour;
+    stamp.minute = minute;
+    stamp.second = second;
+    stamp.ms = ms;
+}
+
+void StopwatchTime::free_stamp() {
+    stamp.ready = false;
+}
+
 DateTime::DateTime() 
     : _month_day_count((_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH))
 {

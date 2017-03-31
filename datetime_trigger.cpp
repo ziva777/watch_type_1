@@ -1,5 +1,70 @@
 #include "datetime_trigger.h"
 
+void StopwatchTimeTrigger::hour_flip() {
+    _hour = true;
+}
+
+void StopwatchTimeTrigger::minute_flip() {
+    _minute = true;
+}
+
+void StopwatchTimeTrigger::second_flip() {
+    _second = true;
+}
+
+void StopwatchTimeTrigger::ms_flip() {
+    _ms = true;
+}
+
+void StopwatchTimeTrigger::on_flip() {
+    _on = true;
+}
+
+void StopwatchTimeTrigger::stoppped_flip() {
+    _stoppped = true;
+}
+
+bool StopwatchTimeTrigger::hour_triggered() const {
+    return _hour;
+}
+
+bool StopwatchTimeTrigger::minute_triggered() const {
+    return _minute;
+}
+
+bool StopwatchTimeTrigger::second_triggered() const {
+    return _second;
+}
+
+bool StopwatchTimeTrigger::ms_triggered() const {
+    return _ms;
+}
+
+bool StopwatchTimeTrigger::on_triggered() const {
+    return _on;
+}
+
+bool StopwatchTimeTrigger::stoppped_triggered() const {
+    return _stoppped;
+}
+
+bool StopwatchTimeTrigger::time_triggered() const {
+    return ms_triggered() or
+            second_triggered() or 
+            minute_triggered() or 
+            hour_triggered();
+}
+
+void StopwatchTimeTrigger::flop() {
+    _hour = false;
+    _minute = false;
+    _second = false;
+    _ms = false;
+    _on = false;
+    _stoppped = false;
+}
+
+
 bool DateTimeTrigger::hour_triggered() const {
     return _hour;
 }

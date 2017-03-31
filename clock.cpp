@@ -1,6 +1,7 @@
 #include "clock.h"
 
 void Clock::next_state() {
+    _state_prev = _state_curr;
     switch (_state_curr) {
         case S_CLOCK1:
             _state_curr = S_CLOCK2;
@@ -39,7 +40,15 @@ Clock::CLOCK_STATES Clock::state() const {
     return _state_curr;
 }
 
+Clock::CLOCK_STATES Clock::state_prev() const {
+    return _state_prev;
+}
+
 void Clock::tick(uint16_t tick_size) {
     primary_datetime.tick(tick_size);
     secondary_datetime.tick(tick_size);
+
+    if (stopwatch.on and !stopwatch.stoppped) {
+        stopwatch.tick(tick_size);
+    }
 }

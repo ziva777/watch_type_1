@@ -30,8 +30,11 @@ void Display::print_text(uint8_t row, uint8_t column, char *s) {
 
 void Display::print_clock_state(const Clock &clock) {
     switch (clock.state()) {
-        case Clock::S_CLOCK_MAIN:
-            print_text(0, 0, "CLK");
+        case Clock::S_CLOCK1:
+            print_text(0, 0, "CL1");
+            break;
+        case Clock::S_CLOCK2:
+            print_text(0, 0, "CL2");
             break;
         case Clock::S_ALARM1:
             print_text(0, 0, "AL1");
@@ -58,6 +61,32 @@ void Display::print_clock_state(const Clock &clock) {
             print_text(0, 0, "SW ");
             break;
     }
+}
+
+void Display::print_time(const DateTime &dt) {
+    char buff[16];
+
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u:%02u:%02u", 
+                  dt.hour,
+                  dt.minute,
+                  dt.second);
+    print_text(0, 4, buff);
+}
+void Display::print_date(const DateTime &dt) {
+    char buff[16];
+    
+    memset(buff, 0, 16);
+    sprintf(buff, "%2u.%02u.%04u", 
+                  dt.day,
+                  dt.month,
+                  dt.year);
+    print_text(1, 3, buff);
+}
+
+void Display::print_datetime(const DateTime &dt) {
+    print_time(dt);
+    print_date(dt);
 }
 
 void Display::set_contrast(uint8_t contrast) {

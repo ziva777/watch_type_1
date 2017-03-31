@@ -5,6 +5,7 @@
 #include <LiquidCrystal.h>
 
 #include "clock.h"
+#include "datetime.h"
 
 class Display {
     public:
@@ -16,6 +17,9 @@ class Display {
 
         void print_text(uint8_t row, uint8_t column, char *s);
         void print_clock_state(const Clock &clock);
+        void print_time(const DateTime &dt);
+        void print_date(const DateTime &dt);
+        void print_datetime(const DateTime &dt);
 
         uint8_t contrast() const;
         uint8_t brightness() const;

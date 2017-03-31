@@ -18,6 +18,7 @@ void Program::setup() {
     _display.set_contrast(55);
     _display.set_brightness(10);
     _display.print_clock_state(_clock);
+    _display.print_datetime(_clock.primary_datetime);
 }
 
 void Program::attach_timer1_interrupt(Timer1::TimerCallbackFunction func){
@@ -38,6 +39,7 @@ void Program::start_timer2() {
 
 void Program::timer1_interrupt() {
     ++msec_counter;
+    _clock.tick(100);
 }
 
 void Program::timer2_interrupt() {
@@ -60,6 +62,29 @@ void Program::loop() {
         _display.print_clock_state(_clock);
     }
     button1.flop();
+
+    button4.update();
+    if (button4.pressed()) {
+        // _clock.primary_datetime.tick(1000);
+        if (_clock.primary_datetime.second > 30)
+            _clock.primary_datetime.second = 59;
+        else
+        _clock.primary_datetime.second = 0;
+    }
+    button4.flop();
+
+    button3.update();
+    if (button3.pressed()) {
+        // _clock.primary_datetime.tick(60 * 1000);
+        _clock.primary_datetime.minute = 
+                ++_clock.primary_datetime.minute % 60;
+        _display.print_time(_clock.primary_datetime);
+    } if (button3.pressed_repeat()) {
+        _clock.primary_datetime.minute = 
+                ++_clock.primary_datetime.minute % 60;
+        _display.print_time(_clock.primary_datetime);
+    }
+    button3.flop();
 
     /*button2.update();
     if (button2.pressed()) {
@@ -87,11 +112,23 @@ void Program::loop() {
 
     */
 
-    if (msec_counter_tmp != msec_counter) { 
-        msec_counter_tmp = msec_counter;
-        char buff[16];
-        memset(buff, 0, 16);
-        sprintf(buff, "V=%5u", msec_counter);
-        _display.print_text(1, 0, buff);
+    // if (msec_counter_tmp != msec_counter) { 
+    //     msec_counter_tmp = msec_counter;
+    //     char buff[16];
+    //     memset(buff, 0, 16);
+    //     sprintf(buff, "V=%5u", msec_counter);
+    //     _display.print_text(1, 0, buff);
+    // }
+
+    if (_clock.primary_datetime.trigger.time_triggered()) {
+        _display.print_time(_clock.primary_datetime);
+
+        if (_clock.primary_datetime.trigger.date_triggered()) {
+            _display.print_date(_clock.primary_datetime);
+        }
+
+        if (_clock.primary_datetime.trigger.time_triggered() or
+            _clock.primary_datetime.trigger.date_triggered()) 
+            _clock.primary_datetime.trigger.flop();
     }
 }

@@ -1,7 +1,9 @@
 #ifndef _PROGRAM_H_
 #define _PROGRAM_H_
 
-#include "button.h"
+#include <Arduino.h>
+#include "clock.h"
+#include "display.h"
 #include "timer1.h"
 #include "timer2.h"
 
@@ -21,12 +23,21 @@ class Program {
 
         void setup();
         void loop();
-        void oscillate();
+        void timer1_interrupt();
+        void timer2_interrupt();
+
+        void attach_timer1_interrupt(Timer1::TimerCallbackFunction func);
+        void attach_timer2_interrupt(Timer2::TimerCallbackFunction func);
+        void start_timer1();
+        void start_timer2();
         
     private:
-        // Display _display;
+        Clock _clock;
+        Display _display;
         // Oscillator _oscillator;
         // DateTime _datetime;
+
+        
 };
 
 #endif // _PROGRAM_H_

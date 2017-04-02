@@ -52,7 +52,7 @@ class StopwatchTime {
             uint32_t ms{0};
             bool ready{false};
         };
-        Stamp stamp;
+        // Stamp stamp;
 
         uint8_t hour{0};
         uint8_t minute{0};
@@ -64,9 +64,15 @@ class StopwatchTime {
 
         StopwatchTimeTrigger trigger; // on change
 
+        static const uint8_t STAMPS_COUNT {10};
+        Stamp stamps[STAMPS_COUNT];
+        uint8_t stamps_index {0};
+        uint8_t stamps_index_to_show {0};
+
         void tick(uint16_t tick_size); // tick_size in mS
         void stamp_it(); // stamp current time in stamp var
         void free_stamp(); // reset stamp var
+        void reset();
 
     private:
         uint8_t _hour_buff{0};

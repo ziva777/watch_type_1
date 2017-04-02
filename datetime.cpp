@@ -96,15 +96,30 @@ void StopwatchTime::tick(uint16_t tick_size) {
 }
 
 void StopwatchTime::stamp_it() {
-    stamp.ready = true;
-    stamp.hour = hour;
-    stamp.minute = minute;
-    stamp.second = second;
-    stamp.ms = ms;
+    stamps[stamps_index].hour = hour;
+    stamps[stamps_index].minute = minute;
+    stamps[stamps_index].second = second;
+    stamps[stamps_index].ms = ms;
+    stamps[stamps_index].ready = true;
+    stamps_index_to_show = stamps_index;
+
+    if (stamps_index != STAMPS_COUNT - 1)
+        ++stamps_index;
 }
 
 void StopwatchTime::free_stamp() {
-    stamp.ready = false;
+    for (uint16_t i = 0; i != STAMPS_COUNT; ++i)
+        stamps[i].ready = false;
+}
+
+void StopwatchTime::reset() {
+    on = false;   
+    stoppped = true;
+    hour = 0;
+    minute = 0;
+    second = 0;
+    ms = 0;
+    stamps_index = 0;
 }
 
 DateTime::DateTime() 

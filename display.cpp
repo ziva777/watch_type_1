@@ -195,9 +195,9 @@ void Display::print_timer3(const TimerDateTime &dt) {
 }
 
 void Display::print_stopwatch(const StopwatchTime &t) {
-    char buff[16];
+    char buff[17];
 
-    memset(buff, 0, 16);
+    memset(buff, 0, 17);
     sprintf(buff, "%02u:%02u:%02u.%01u   ", 
                   t.hour,
                   t.minute,
@@ -205,18 +205,20 @@ void Display::print_stopwatch(const StopwatchTime &t) {
                   t.ms / 100);
     print_text(0, 3, buff);
 
-    memset(buff, 0, 16);
+    memset(buff, 0, 17);
 
-    if (t.stamp.ready)
-      sprintf(buff, " %02u:%02u:%02u.%01u   ", 
-                  t.stamp.hour,
-                  t.stamp.minute,
-                  t.stamp.second,
-                  t.stamp.ms / 100);
-    else
-      sprintf(buff, " --:--:--.-  ");
+    if (!t.stamps[t.stamps_index_to_show].ready) {
+        sprintf(buff, "   --:--:--.-  ");
+    } else {
+        sprintf(buff, "%2u %02u:%02u:%02u.%01u   ", 
+                      t.stamps_index_to_show + 1,
+                      t.stamps[t.stamps_index_to_show].hour,
+                      t.stamps[t.stamps_index_to_show].minute,
+                      t.stamps[t.stamps_index_to_show].second,
+                      t.stamps[t.stamps_index_to_show].ms / 100);
+    }
       
-    print_text(1, 2, buff);
+    print_text(1, 0, buff);
 }
 
 void Display::set_contrast(uint8_t contrast) {

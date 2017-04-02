@@ -317,16 +317,18 @@ void ClockController::_handle_timer_type3_substate(Clock::CLOCK_SUBSTATES substa
 }
 
 void ClockController::_handle_stopwatch(StopwatchTime &stopwatch) {
-    static Clock::CLOCK_STATES clock_state_curr = _clock.state();
-    static Clock::CLOCK_STATES clock_state_prev = _clock.state();
+    // static Clock::CLOCK_STATES clock_state_curr = _clock.state();
+    // static Clock::CLOCK_STATES clock_state_prev = _clock.state();
 
-    clock_state_curr = _clock.state();
+    // clock_state_curr = _clock.state();
 
-    if (stopwatch.trigger.time_triggered() or (clock_state_prev != clock_state_curr))
+    if (stopwatch.trigger.time_triggered())
         _display.print_stopwatch(stopwatch);
-    _display.print_stopwatch(stopwatch);
 
-    clock_state_prev = clock_state_curr;
+    // if ((clock_state_prev != clock_state_curr))
+    //     _display.print_stopwatch(stopwatch);
+
+    // clock_state_prev = clock_state_curr;
 }
 
 void ClockController::_clock_force_update(DateTime &dt) {
@@ -538,19 +540,24 @@ void ClockController::sync(){
             if (_button3.pressed()) {
                 if (_clock.stopwatch.on and not _clock.stopwatch.stoppped) {
                     _clock.stopwatch.stamp_it();
+                } else 
+                if (_clock.stopwatch.on and _clock.stopwatch.stoppped) {
+                    if (_clock.stopwatch.stamps_index_to_show)
+                        --_clock.stopwatch.stamps_index_to_show;
                 }
             } else
             if (_button3.pressed_hard()) {
                 if (_clock.stopwatch.on) {
                     if (_clock.stopwatch.stoppped) {
-                        _clock.stopwatch.on = false;   
-                        _clock.stopwatch.stoppped = true;
-                        _clock.stopwatch.hour = 0;
-                        _clock.stopwatch.minute = 0;
-                        _clock.stopwatch.second = 0;
-                        _clock.stopwatch.ms = 0;
                         _clock.stopwatch.free_stamp();
+                        _clock.stopwatch.reset();
                     }
+                }
+            } else
+            if (_button4.pressed()) {
+                if (_clock.stopwatch.on and _clock.stopwatch.stoppped) {
+                    if (_clock.stopwatch.stamps_index_to_show < _clock.stopwatch.stamps_index - 1)
+                        ++_clock.stopwatch.stamps_index_to_show;
                 }
             }
         }
@@ -599,9 +606,12 @@ void ClockController::sync(){
         case Clock::S_TIMER3:
             _handle_timer_type3_substate(substate, _clock.timer3_datetime, _clock.primary_datetime);
             break;
-        case Clock::S_STOPWATCH:
-            _handle_stopwatch(_clock.stopwatch);
-            break;
+        case Clock::S_STOPWATCH: {
+                if ((clock_state_prev != clock_state_curr))
+                    _display.print_stopwatch(_clock.stopwatch);
+                _handle_stopwatch(_clock.stopwatch);
+                break;
+            }
     }
 
     clock_state_prev = clock_state_curr;

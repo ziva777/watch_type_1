@@ -18,7 +18,7 @@ void setup() {
   program.attach_timer1_interrupt(timer1_interrupt);
   program.attach_timer2_interrupt(timer2_interrupt);
   program.start_timer1();
-  program.start_timer2();
+  //program.start_timer2();
 }
 
 void loop() {

@@ -36,6 +36,31 @@ static uint8_t MONTH_LENGTH_LEAP[] = {
     31  // 12  December  31 days
 };
 
+void TimerDateTime::normalize() {
+    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+
+    if (origin_day > _month_day_count[origin_month]) {
+        origin_day = 1;
+        ++origin_month;
+
+        if (origin_month > 12) {
+            origin_month = 1;
+            ++origin_year;
+
+            leap = _is_leap(origin_year);
+        }
+        _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    }
+}
+
+bool TimerDateTime::_is_leap(uint16_t y) const {
+    return ((y % 4) == 0) && (((y % 100)!=0) || ((y % 400) == 0));
+}
+
+uint8_t TimerDateTime::_day_of_week(uint16_t d, uint16_t m, uint16_t y) const {
+    return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
+}
+
 void StopwatchTime::tick(uint16_t tick_size) {
     trigger.flop();
     _hour_buff = hour;
@@ -122,7 +147,7 @@ void DateTime::tick(uint16_t tick_size) {
             hour = 0;
             ++day;
 
-             if (day > _month_day_count[month]) {
+            if (day > _month_day_count[month]) {
                 day = 1;
                 ++month;
 
@@ -138,6 +163,65 @@ void DateTime::tick(uint16_t tick_size) {
             day_of_week = _day_of_week(day, month, year);
         }
     }
+
+    if (hour != _hour_buff)
+        trigger.hour_flip();
+
+    if (minute != _minute_buff)
+        trigger.minute_flip();
+
+    if (second != _second_buff)
+        trigger.second_flip();
+
+    if (day != _day_buff)
+        trigger.day_flip();
+
+    if (month != _month_buff)
+        trigger.month_flip();
+
+    if (year != _year_buff)
+        trigger.year_flip();
+}
+
+void DateTime::normalize() {
+    trigger.flop();
+    _hour_buff = hour;
+    _minute_buff = minute;
+    _second_buff = second;
+    _day_buff = day;
+    _month_buff = month;
+    _year_buff = year;
+
+    second += ms / 1000;
+    ms %= 1000;
+
+    minute += second / 60;
+    second %= 60;
+
+    if (minute >= 60) {
+        minute %= 60;
+        ++hour;
+    }
+
+    if (hour == 24) {
+        hour = 0;
+        ++day;
+    }
+
+    if (day > _month_day_count[month]) {
+        day = 1;
+        ++month;
+    }
+
+    day_of_week = _day_of_week(day, month, year);
+
+    if (month > 12) {
+        month = 1;
+        ++year;
+
+        _leap = _is_leap(year);
+    }
+    _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 
     if (hour != _hour_buff)
         trigger.hour_flip();

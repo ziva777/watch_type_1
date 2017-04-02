@@ -9,6 +9,7 @@ class AlarmDateTime {
         uint8_t hour{0};
         uint8_t minute{0};
         uint8_t days[7]{0, 1, 1, 1, 1, 1, 0}; // 0 - sunday, 1 - monday, etc
+        uint8_t day_pointer = 1; // 1 - monday
 
         bool on{false};
         bool stoppped{false};
@@ -18,9 +19,12 @@ class AlarmDateTime {
 class TimerDateTime {
     public:
         uint8_t origin_hour{0};
-        uint8_t origin_minute{5};
-        uint8_t origin_second{0};
+        uint8_t origin_minute{0};
+        uint8_t origin_second{1};
+
         uint16_t origin_day{0};
+        uint16_t origin_month{0};
+        uint16_t origin_year{0};
 
         uint8_t hour{0};
         uint8_t minute{0};
@@ -29,7 +33,14 @@ class TimerDateTime {
 
         bool on{false};
         bool stoppped{false};
+        bool leap{false};
+
+        void normalize();
     private:
+        uint8_t *_month_day_count;
+
+        bool _is_leap(uint16_t y) const;
+        uint8_t _day_of_week(uint16_t d, uint16_t m, uint16_t y) const;
 };
 
 class StopwatchTime {
@@ -81,6 +92,9 @@ class DateTime {
         DateTime();
 
         void tick(uint16_t tick_size); // tick_size in mS
+        void normalize();
+
+        bool leap() const { return _leap; };
 
     private:
         bool _leap{false};

@@ -36,6 +36,14 @@ static uint8_t MONTH_LENGTH_LEAP[] = {
     31  // 12  December  31 days
 };
 
+bool is_leap(uint16_t y) {
+    return ((y % 4) == 0) && (((y % 100)!=0) || ((y % 400) == 0));
+}
+
+uint8_t day_of_week(uint16_t d, uint16_t m, uint16_t y) {
+    return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
+}
+
 void TimerDateTime::normalize() {
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 
@@ -47,18 +55,10 @@ void TimerDateTime::normalize() {
             origin_month = 1;
             ++origin_year;
 
-            leap = _is_leap(origin_year);
+            leap = is_leap(origin_year);
         }
         _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
     }
-}
-
-bool TimerDateTime::_is_leap(uint16_t y) const {
-    return ((y % 4) == 0) && (((y % 100)!=0) || ((y % 400) == 0));
-}
-
-uint8_t TimerDateTime::_day_of_week(uint16_t d, uint16_t m, uint16_t y) const {
-    return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
 }
 
 void StopwatchTime::tick(uint16_t tick_size) {
@@ -132,8 +132,8 @@ DateTime::DateTime()
     day = 31;
     month = 3;
     year = 2017;
-    day_of_week = _day_of_week(day, month, year);
-    _leap = _is_leap(year);
+    day_of_week = ::day_of_week(day, month, year);
+    _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
@@ -170,12 +170,12 @@ void DateTime::tick(uint16_t tick_size) {
                     month = 1;
                     ++year;
 
-                    _leap = _is_leap(year);
+                    _leap = ::is_leap(year);
                 }
                 _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
             }
 
-            day_of_week = _day_of_week(day, month, year);
+            day_of_week = ::day_of_week(day, month, year);
         }
     }
 
@@ -196,6 +196,52 @@ void DateTime::tick(uint16_t tick_size) {
 
     if (year != _year_buff)
         trigger.year_flip();
+}
+
+void DateTime::dec_second() {
+    if (second == 0) {
+        dec_minute();
+        second = 59;
+    } else
+        --second;
+}
+
+void DateTime::dec_minute() {
+    if (minute == 0) {
+        dec_hour();
+        minute = 59;
+    } else
+        --minute;
+}
+
+void DateTime::dec_hour() {
+    if (hour == 0) {
+        dec_day();
+        hour = 23;
+    } else
+        --hour;
+}
+
+void DateTime::dec_day() {
+    if (day == 1) {
+        dec_month();
+        day = _month_day_count[month];
+    } else
+        --day;
+}
+
+void DateTime::dec_month() {
+    if (month == 1) {
+        dec_year();
+        month = 12;
+    } else
+        --month;
+}
+
+void DateTime::dec_year() {
+    --year;
+    _leap = ::is_leap(year);
+    _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
 void DateTime::normalize() {
@@ -228,13 +274,13 @@ void DateTime::normalize() {
         ++month;
     }
 
-    day_of_week = _day_of_week(day, month, year);
+    day_of_week = ::day_of_week(day, month, year);
 
     if (month > 12) {
         month = 1;
         ++year;
 
-        _leap = _is_leap(year);
+        _leap = ::is_leap(year);
     }
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 
@@ -255,12 +301,4 @@ void DateTime::normalize() {
 
     if (year != _year_buff)
         trigger.year_flip();
-}
-
-bool DateTime::_is_leap(uint16_t y) const {
-    return ((y % 4) == 0) && (((y % 100)!=0) || ((y % 400) == 0));
-}
-
-uint8_t DateTime::_day_of_week(uint16_t d, uint16_t m, uint16_t y) const {
-    return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
 }

@@ -236,11 +236,11 @@ void Display::clear() {
 }
 
 void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    char buff[16];
+    char buff[17];
 
-    memset(buff, 0, 16);
+    memset(buff, 0, 17);
 
-    if (state == Clock::S_CLOCK1_EDIT_SECONDS)
+    if (state == Clock::S_CLOCK_EDIT_SECONDS)
         if (((millis() % 1000) < 250))
             sprintf(buff, " %2u:%02u:  ", 
                           dt.hour,
@@ -251,7 +251,7 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.minute,
                           dt.second);
     else
-    if (state == Clock::S_CLOCK1_EDIT_MINUTES)
+    if (state == Clock::S_CLOCK_EDIT_MINUTES)
         if (((millis() % 1000) < 250))
             sprintf(buff, " %2u:  :%02u", 
                           dt.hour,
@@ -263,7 +263,7 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.minute,
                           dt.second);
     else
-    if (state == Clock::S_CLOCK1_EDIT_HOURS)
+    if (state == Clock::S_CLOCK_EDIT_HOURS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "   :%02u:%02u", 
                           //dt.hour,
@@ -275,7 +275,7 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.minute,
                           dt.second);
     else
-    if (state == Clock::S_CLOCK1_EDIT_DAYS)
+    if (state == Clock::S_CLOCK_EDIT_DAYS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "  .%02u.%04u %s", 
                           //dt.day,
@@ -289,7 +289,7 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.year,
                           DAY_NAME[dt.day_of_week]);
     else
-    if (state == Clock::S_CLOCK1_EDIT_MONTHS)
+    if (state == Clock::S_CLOCK_EDIT_MONTHS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u.  .%04u %s", 
                           dt.day,
@@ -303,7 +303,7 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.year,
                           DAY_NAME[dt.day_of_week]);
     else
-    if (state == Clock::S_CLOCK1_EDIT_YEARS)
+    if (state == Clock::S_CLOCK_EDIT_YEARS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u.%02u.     %s", 
                           dt.day,
@@ -317,9 +317,9 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
                           dt.year,
                           DAY_NAME[dt.day_of_week]);
 
-    if (state == Clock::S_CLOCK1_EDIT_SECONDS or
-        state == Clock::S_CLOCK1_EDIT_MINUTES or
-        state == Clock::S_CLOCK1_EDIT_HOURS)
+    if (state == Clock::S_CLOCK_EDIT_SECONDS or
+        state == Clock::S_CLOCK_EDIT_MINUTES or
+        state == Clock::S_CLOCK_EDIT_HOURS)
         print_text(0, 3, buff);
     else
         print_text(1, 3, buff);
@@ -330,7 +330,7 @@ void Display::print_edit_alarm_type1(const AlarmDateTime &dt, Clock::CLOCK_SUBST
 
     memset(buff, 0, 16);
 
-    if (state == Clock::S_ALARM_EDIT_MINUTES)
+    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u:    %s", 
                           dt.hour,
@@ -343,7 +343,7 @@ void Display::print_edit_alarm_type1(const AlarmDateTime &dt, Clock::CLOCK_SUBST
                           dt.minute,
                           (dt.on ? "on " : "off"));
     else
-    if (state == Clock::S_ALARM_EDIT_HOURS)
+    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "  :%02u  %s", 
                           // dt.hour,
@@ -370,7 +370,7 @@ void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBST
     char buff[16];
     memset(buff, 0, 16);
 
-    if (state == Clock::S_ALARM2_EDIT_MINUTES)
+    if (state == Clock::S_ALARM_TYPE2_EDIT_MINUTES)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u:    %s", 
                           dt.hour,
@@ -383,7 +383,7 @@ void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBST
                           dt.minute,
                           (dt.on ? "on " : "off"));
     else
-    if (state == Clock::S_ALARM2_EDIT_HOURS)
+    if (state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "  :%02u  %s", 
                           // dt.hour,
@@ -404,7 +404,7 @@ void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBST
 
     memset(buff, ' ', 16);
 
-    if (state == Clock::S_ALARM2_EDIT_DAYS_OF_WEEK) {
+    if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
         if (((millis() % 1000) < 250)) {
             buff[10 + 1] = (dt.day_pointer == 0 ? ' ' : (dt.days[0] ? 'S' : 's'));
             buff[ 4 + 1] = (dt.day_pointer == 1 ? ' ' : (dt.days[1] ? 'M' : 'm'));
@@ -439,7 +439,7 @@ void Display::print_edit_timer_type1(const TimerDateTime &dt, Clock::CLOCK_SUBST
 
     memset(buff, 0, 16);
 
-    if (state == Clock::S_TIMER_EDIT_SECONDS)
+    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u:%02u:   %s", 
                           dt.origin_hour,
@@ -453,7 +453,7 @@ void Display::print_edit_timer_type1(const TimerDateTime &dt, Clock::CLOCK_SUBST
                           dt.origin_second,
                           (dt.on ? "on " : "off"));
     else
-    if (state == Clock::S_TIMER_EDIT_MINUTES)
+    if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u:  :%02u %s", 
                           dt.origin_hour,
@@ -466,7 +466,7 @@ void Display::print_edit_timer_type1(const TimerDateTime &dt, Clock::CLOCK_SUBST
                           dt.origin_minute,
                           dt.origin_second,
                           (dt.on ? "on " : "off"));
-    if (state == Clock::S_TIMER_EDIT_HOURS)
+    if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "  :%02u:%02u %s", 
                           // dt.origin_hour,
@@ -498,7 +498,7 @@ void Display::print_edit_timer_type3(const TimerDateTime &dt, Clock::CLOCK_SUBST
     char buff[16];
     memset(buff, 0, 16);
 
-    if (state == Clock::S_TIMER2_EDIT_DAYS)
+    if (state == Clock::S_TIMER_TYPE2_EDIT_DAYS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "  .%02u.%02u %s", 
                       // dt.origin_day,
@@ -512,7 +512,7 @@ void Display::print_edit_timer_type3(const TimerDateTime &dt, Clock::CLOCK_SUBST
                       dt.origin_year % 100,
                       (dt.on ? "on " : "off"));
     else
-    if (state == Clock::S_TIMER2_EDIT_MONTHS)
+    if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u.  .%02u %s", 
                       dt.origin_day,
@@ -526,7 +526,7 @@ void Display::print_edit_timer_type3(const TimerDateTime &dt, Clock::CLOCK_SUBST
                       dt.origin_year % 100,
                       (dt.on ? "on " : "off"));
     else
-    if (state == Clock::S_TIMER2_EDIT_YEARS)
+    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
         if (((millis() % 1000) < 250))
             sprintf(buff, "%2u.%02u.   %s", 
                       dt.origin_day,

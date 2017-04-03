@@ -44,25 +44,25 @@ void Clock::begin_substate() {
     switch (s) {
         case S_CLOCK1:
         case S_CLOCK2:
-            _substate_curr = S_CLOCK1_EDIT_SECONDS;
+            _substate_curr = S_CLOCK_EDIT_SECONDS;
             break;
 
         case S_ALARM1:
         case S_ALARM2:
-            _substate_curr = S_ALARM_EDIT_MINUTES;
+            _substate_curr = S_ALARM_TYPE1_EDIT_MINUTES;
             break;
 
         case S_ALARM3:
-            _substate_curr = S_ALARM2_EDIT_MINUTES;
+            _substate_curr = S_ALARM_TYPE2_EDIT_MINUTES;
             break;
 
         case S_TIMER1:
         case S_TIMER2:
-            _substate_curr = S_TIMER_EDIT_SECONDS;
+            _substate_curr = S_TIMER_TYPE1_EDIT_SECONDS;
             break;
 
         case S_TIMER3:
-            _substate_curr = S_TIMER2_EDIT_DAYS;
+            _substate_curr = S_TIMER_TYPE2_EDIT_DAYS;
             break;
 
         default:
@@ -79,23 +79,23 @@ void Clock::next_substate() {
         case S_CLOCK1:
         case S_CLOCK2:
             switch (_substate_curr) {
-                case S_CLOCK1_EDIT_SECONDS:
-                    _substate_curr = S_CLOCK1_EDIT_MINUTES;
+                case S_CLOCK_EDIT_SECONDS:
+                    _substate_curr = S_CLOCK_EDIT_MINUTES;
                     break;
-                case S_CLOCK1_EDIT_MINUTES:
-                    _substate_curr = S_CLOCK1_EDIT_HOURS;
+                case S_CLOCK_EDIT_MINUTES:
+                    _substate_curr = S_CLOCK_EDIT_HOURS;
                     break;
-                case S_CLOCK1_EDIT_HOURS:
-                    _substate_curr = S_CLOCK1_EDIT_DAYS;
+                case S_CLOCK_EDIT_HOURS:
+                    _substate_curr = S_CLOCK_EDIT_YEARS;
                     break;
-                case S_CLOCK1_EDIT_DAYS:
-                    _substate_curr = S_CLOCK1_EDIT_MONTHS;
+                case S_CLOCK_EDIT_YEARS:
+                    _substate_curr = S_CLOCK_EDIT_MONTHS;
                     break;
-                case S_CLOCK1_EDIT_MONTHS:
-                    _substate_curr = S_CLOCK1_EDIT_YEARS;
+                case S_CLOCK_EDIT_MONTHS:
+                    _substate_curr = S_CLOCK_EDIT_DAYS;
                     break;
-                case S_CLOCK1_EDIT_YEARS:
-                    _substate_curr = S_CLOCK1_EDIT_SECONDS;
+                case S_CLOCK_EDIT_DAYS:
+                    _substate_curr = S_CLOCK_EDIT_SECONDS;
                     break;
             }
             break;
@@ -103,25 +103,25 @@ void Clock::next_substate() {
         case S_ALARM1:
         case S_ALARM2:
             switch (_substate_curr) {
-                case S_ALARM_EDIT_MINUTES:
-                    _substate_curr = S_ALARM_EDIT_HOURS;
+                case S_ALARM_TYPE1_EDIT_MINUTES:
+                    _substate_curr = S_ALARM_TYPE1_EDIT_HOURS;
                     break;
-                case S_ALARM_EDIT_HOURS:
-                    _substate_curr = S_ALARM_EDIT_MINUTES;
+                case S_ALARM_TYPE1_EDIT_HOURS:
+                    _substate_curr = S_ALARM_TYPE1_EDIT_MINUTES;
                     break;
             }
             break;
 
         case S_ALARM3:
             switch (_substate_curr) {
-                case S_ALARM2_EDIT_MINUTES:
-                    _substate_curr = S_ALARM2_EDIT_HOURS;
+                case S_ALARM_TYPE2_EDIT_MINUTES:
+                    _substate_curr = S_ALARM_TYPE2_EDIT_HOURS;
                     break;
-                case S_ALARM2_EDIT_HOURS:
-                    _substate_curr = S_ALARM2_EDIT_DAYS_OF_WEEK;
+                case S_ALARM_TYPE2_EDIT_HOURS:
+                    _substate_curr = S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK;
                     break;
-                case S_ALARM2_EDIT_DAYS_OF_WEEK:
-                    _substate_curr = S_ALARM2_EDIT_MINUTES;
+                case S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK:
+                    _substate_curr = S_ALARM_TYPE2_EDIT_MINUTES;
                     break;
             }
             break;
@@ -129,28 +129,28 @@ void Clock::next_substate() {
         case S_TIMER1:
         case S_TIMER2:
             switch (_substate_curr) {
-                case S_TIMER_EDIT_SECONDS:
-                    _substate_curr = S_TIMER_EDIT_MINUTES;
+                case S_TIMER_TYPE1_EDIT_SECONDS:
+                    _substate_curr = S_TIMER_TYPE1_EDIT_MINUTES;
                     break;
-                case S_TIMER_EDIT_MINUTES:
-                    _substate_curr = S_TIMER_EDIT_HOURS;
+                case S_TIMER_TYPE1_EDIT_MINUTES:
+                    _substate_curr = S_TIMER_TYPE1_EDIT_HOURS;
                     break;
-                case S_TIMER_EDIT_HOURS:
-                    _substate_curr = S_TIMER_EDIT_SECONDS;
+                case S_TIMER_TYPE1_EDIT_HOURS:
+                    _substate_curr = S_TIMER_TYPE1_EDIT_SECONDS;
                     break;
             }
             break;
 
         case S_TIMER3:
             switch (_substate_curr) {
-                case S_TIMER2_EDIT_DAYS:
-                    _substate_curr = S_TIMER2_EDIT_MONTHS;
+                case S_TIMER_TYPE2_EDIT_DAYS:
+                    _substate_curr = S_TIMER_TYPE2_EDIT_MONTHS;
                     break;
-                case S_TIMER2_EDIT_MONTHS:
-                    _substate_curr = S_TIMER2_EDIT_YEARS;
+                case S_TIMER_TYPE2_EDIT_MONTHS:
+                    _substate_curr = S_TIMER_TYPE2_EDIT_YEARS;
                     break;
-                case S_TIMER2_EDIT_YEARS:
-                    _substate_curr = S_TIMER2_EDIT_DAYS;
+                case S_TIMER_TYPE2_EDIT_YEARS:
+                    _substate_curr = S_TIMER_TYPE2_EDIT_DAYS;
                     break;
             }
             break;

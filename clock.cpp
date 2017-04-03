@@ -185,4 +185,8 @@ void Clock::tick(uint16_t tick_size) {
     if (stopwatch.on and !stopwatch.stoppped) {
         stopwatch.tick(tick_size);
     }
+
+    if (timer1_datetime.on and !timer1_datetime.stoppped) {
+        timer1_datetime.tick_countdown(tick_size);
+    }
 }

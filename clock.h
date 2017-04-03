@@ -60,9 +60,9 @@ class Clock {
         TimerDateTime timer2_datetime;
         TimerDateTime timer3_datetime;
 
-        bool hour_signal;
-
         StopwatchTime stopwatch;
+
+        bool hour_signal;
 
         void tick(uint16_t tick_size); // tick_size in mS
 

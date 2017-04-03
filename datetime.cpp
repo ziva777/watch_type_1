@@ -95,6 +95,42 @@ void TimerDateTime::dec_origin_year() {
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
+void TimerDateTime::launch_countdown() {
+    hour = origin_hour;
+    minute = origin_minute;
+    second = origin_second;
+    ms = 0;
+}
+
+void TimerDateTime::tick_countdown(uint16_t tick_size) {
+    ms += tick_size;
+
+    if (ms > 1000) {
+        ms %= 1000;
+        
+        uint32_t total_sec = hour * 3600UL + 
+                                minute * 60UL + 
+                                  second;
+
+        if (total_sec)
+            --total_sec;
+        else {
+            on = false;
+        }
+
+        hour = total_sec / 3600UL;
+        minute = (total_sec - hour * 3600UL) / 60UL;
+        second = total_sec - hour * 3600UL - minute * 60UL;
+    }
+}
+
+void TimerDateTime::reset_countdown() {
+    hour = 0;
+    minute = 0;
+    second = 0;
+    ms = 0;
+}
+
 void StopwatchTime::tick(uint16_t tick_size) {
     trigger.flop();
     _hour_buff = hour;
@@ -233,49 +269,33 @@ void DateTime::tick(uint16_t tick_size) {
 }
 
 void DateTime::dec_second() {
-    if (second == 0) {
-        dec_minute();
-        second = 59;
-    } else
-        --second;
+    
 }
 
 void DateTime::dec_minute() {
-    if (minute == 0) {
-        dec_hour();
-        minute = 59;
-    } else
-        --minute;
+    
 }
 
 void DateTime::dec_hour() {
-    if (hour == 0) {
-        dec_day();
-        hour = 23;
-    } else
-        --hour;
+    
 }
 
 void DateTime::dec_day() {
-    if (day == 1) {
-        dec_month();
-        day = _month_day_count[month];
-    } else
-        --day;
+    
 }
 
 void DateTime::dec_month() {
-    if (month == 1) {
-        dec_year();
-        month = 12;
-    } else
-        --month;
+    
 }
 
 void DateTime::dec_year() {
     --year;
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+}
+
+uint8_t DateTime::days_in_month() const {
+    return _month_day_count[month];
 }
 
 void DateTime::normalize() {

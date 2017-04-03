@@ -19,22 +19,23 @@ class AlarmDateTime {
 
 class TimerDateTime {
     public:
-        uint8_t origin_hour{0};
-        uint8_t origin_minute{0};
-        uint8_t origin_second{1};
+        uint8_t origin_hour {0};
+        uint8_t origin_minute {0};
+        uint8_t origin_second {10};
 
-        uint16_t origin_day{0};
-        uint16_t origin_month{0};
-        uint16_t origin_year{0};
+        uint16_t origin_day {0};
+        uint16_t origin_month {0};
+        uint16_t origin_year {0};
 
-        uint8_t hour{0};
-        uint8_t minute{0};
-        uint8_t second{0};
-        uint16_t day{0};
+        uint8_t hour {0};
+        uint8_t minute {0};
+        uint8_t second {0};
+        uint32_t ms {0};
+        uint16_t day {0};
 
-        bool on{false};
-        bool stoppped{false};
-        bool leap{false};
+        bool on {false};
+        bool stoppped {false};
+        bool leap {false};
 
         void normalize();
 
@@ -46,6 +47,10 @@ class TimerDateTime {
         void dec_origin_month();
         void dec_origin_year();
 
+        void launch_countdown();
+        void tick_countdown(uint16_t tick_size);
+        void reset_countdown();
+
     private:
         uint8_t *_month_day_count;
 };
@@ -53,20 +58,20 @@ class TimerDateTime {
 class StopwatchTime {
     public:
         struct Stamp{
-            uint8_t hour{0};
-            uint8_t minute{0};
-            uint8_t second{0};
-            uint32_t ms{0};
-            bool ready{false};
+            uint8_t hour {0};
+            uint8_t minute {0};
+            uint8_t second {0};
+            uint32_t ms {0};
+            bool ready {false};
         };
 
-        uint8_t hour{0};
-        uint8_t minute{0};
-        uint8_t second{0};
-        uint32_t ms{0};
+        uint8_t hour {0};
+        uint8_t minute {0};
+        uint8_t second {0};
+        uint32_t ms {0};
 
-        bool on{false};
-        bool stoppped{false};
+        bool on {false};
+        bool stoppped {false};
 
         StopwatchTimeTrigger trigger; // on change
 
@@ -81,10 +86,10 @@ class StopwatchTime {
         void reset();
 
     private:
-        uint8_t _hour_buff{0};
-        uint8_t _minute_buff{0};
-        uint8_t _second_buff{0};
-        uint32_t _ms_buff{0};
+        uint8_t _hour_buff {0};
+        uint8_t _minute_buff {0};
+        uint8_t _second_buff {0};
+        uint32_t _ms_buff {0};
 };
 
 class DateTime {
@@ -103,29 +108,29 @@ class DateTime {
 
         DateTime();
 
-        void tick(uint16_t tick_size); // tick_size in mS
-        void normalize();
-
+        void tick(uint16_t  tick_size); // tick_size in mS
+        uint8_t days_in_month() const;
         bool leap() const { return _leap; };
 
         void dec_second();
         void dec_minute();
         void dec_hour();
-
         void dec_day();
         void dec_month();
         void dec_year();
 
+        void normalize();
+
     private:
-        bool _leap{false};
+        bool _leap {false};
         uint8_t *_month_day_count;
 
-        uint8_t _hour_buff{0};
-        uint8_t _minute_buff{0};
-        uint8_t _second_buff{0};
-        uint8_t _day_buff{0};
-        uint8_t _month_buff{0};
-        uint16_t _year_buff{0};
+        uint8_t _hour_buff {0};
+        uint8_t _minute_buff {0};
+        uint8_t _second_buff {0};
+        uint8_t _day_buff {0};
+        uint8_t _month_buff {0};
+        uint16_t _year_buff {0};
 };
 
 #endif // _DATETIME_H_

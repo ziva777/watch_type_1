@@ -11,7 +11,7 @@ void ClockController::setup(){
     _display.set_contrast(55);
     _display.set_brightness(50);
     _display.print_clock_state(_clock);
-    _display.print_datetime(_clock.primary_datetime);
+    _display.print_clock_datetime(_clock.primary_datetime);
 }
 
 void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
@@ -57,7 +57,7 @@ void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) 
 }
 
 void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES) {
+    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
         ++dt.minute;
 
         if (dt.minute == 60) {
@@ -66,7 +66,7 @@ void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state
         }
     }
     else 
-    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS)
+    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
         dt.hour = ++dt.hour % 24;
     else
     if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
@@ -75,7 +75,7 @@ void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state
 }
 
 void ClockController::_dec_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES) {
+    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
         if (dt.minute != 0)
             --dt.minute;
         else {
@@ -87,7 +87,7 @@ void ClockController::_dec_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state
                 dt.hour = 23;
         }
     } else 
-    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS) {
+    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS) {
         if (dt.hour)
             --dt.hour;
         else
@@ -167,7 +167,10 @@ void ClockController::_dec_timer_type1(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
         dt.origin_second = total_sec - dt.origin_hour * 3600UL - dt.origin_minute * 60UL;
     } else
     if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS) {
-        ++dt.origin_hour;
+        if (dt.origin_hour == 0)
+            dt.origin_hour = 99;
+        else
+            --dt.origin_hour;
     }
 }
 
@@ -264,10 +267,10 @@ void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
 void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, DateTime &dt) {
     if (substate == Clock::S_NONE) {
         if (dt.trigger.time_triggered())
-            _display.print_time(dt);
+            _display.print_clock_time(dt);
 
         if (dt.trigger.date_triggered())
-            _display.print_date(dt);
+            _display.print_clock_date(dt);
     } else {
         _display.print_edit_clock(dt, substate);
     }
@@ -275,42 +278,42 @@ void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, Da
 
 void ClockController::_handle_alarm_type1_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
     if (substate == Clock::S_NONE)
-        _display.print_alarm1(dt);
+        _display.print_alarm_type1(dt);
     else
         _display.print_edit_alarm_type1(dt, substate);
 }
 
 void ClockController::_handle_alarm_type2_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
     if (substate == Clock::S_NONE)
-        _display.print_alarm2(dt);
+        _display.print_alarm_type2(dt);
     else
         _display.print_edit_alarm_type2(dt, substate);
 }
 
 void ClockController::_handle_alarm_type3_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
     if (substate == Clock::S_NONE)
-        _display.print_alarm3(dt);
+        _display.print_alarm_type3(dt);
     else
         _display.print_edit_alarm_type3(dt, substate);
 }
 
 void ClockController::_handle_timer_type1_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt) {
     if (substate == Clock::S_NONE)
-        _display.print_timer1(dt);
+        _display.print_timer_type1(dt);
     else
         _display.print_edit_timer_type1(dt, substate);   
 }
 
 void ClockController::_handle_timer_type2_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt) {
     if (substate == Clock::S_NONE)
-        _display.print_timer2(dt);
+        _display.print_timer_type2(dt);
     else
         _display.print_edit_timer_type2(dt, substate);   
 }
 
 void ClockController::_handle_timer_type3_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt, DateTime &curr_dt) {
     if (substate == Clock::S_NONE)
-        _display.print_timer3(dt);
+        _display.print_timer_type3(dt);
     else
         _display.print_edit_timer_type3(dt, substate);   
 }
@@ -318,11 +321,6 @@ void ClockController::_handle_timer_type3_substate(Clock::CLOCK_SUBSTATES substa
 void ClockController::_handle_stopwatch(StopwatchTime &stopwatch) {
     if (stopwatch.trigger.time_triggered())
         _display.print_stopwatch(stopwatch);
-}
-
-void ClockController::_clock_force_update(DateTime &dt) {
-    _display.print_time(dt);
-    _display.print_date(dt);
 }
 
 void ClockController::sync(){
@@ -360,7 +358,7 @@ void ClockController::sync(){
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
-                    _clock_force_update(dt);
+                    _display.print_clock_datetime(dt);
                 }
 
                 if (_button3.pressed() or _button3.pressed_repeat())
@@ -562,14 +560,14 @@ void ClockController::sync(){
     switch (_clock.state()) {
         case Clock::S_CLOCK1: {
                 if (state_cnanged)
-                    _clock_force_update(_clock.primary_datetime);
+                    _display.print_clock_datetime(_clock.primary_datetime);
                 else
                     _handle_clock_substate(substate, _clock.primary_datetime);
             }
             break;
         case Clock::S_CLOCK2: {
                 if (state_cnanged)
-                    _clock_force_update(_clock.secondary_datetime);
+                    _display.print_clock_datetime(_clock.secondary_datetime);
                 else
                     _handle_clock_substate(substate, _clock.secondary_datetime);
             }

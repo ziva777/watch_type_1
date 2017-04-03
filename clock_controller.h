@@ -55,8 +55,6 @@ class ClockController {
         void _handle_timer_type2_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt);
         void _handle_timer_type3_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt, DateTime &curr_dt);
         void _handle_stopwatch(StopwatchTime &stopwatch);
-
-        void _clock_force_update(DateTime &dt);
 };
 
 #endif // _CLOCK_CONTROLLER_H_

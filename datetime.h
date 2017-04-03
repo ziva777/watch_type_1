@@ -38,6 +38,14 @@ class TimerDateTime {
 
         void normalize();
 
+        void inc_origin_day();
+        void inc_origin_month();
+        void inc_origin_year();
+
+        void dec_origin_day();
+        void dec_origin_month();
+        void dec_origin_year();
+
     private:
         uint8_t *_month_day_count;
 };

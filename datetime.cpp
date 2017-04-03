@@ -45,20 +45,54 @@ uint8_t day_of_week(uint16_t d, uint16_t m, uint16_t y) {
 }
 
 void TimerDateTime::normalize() {
+    leap = is_leap(origin_year);
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+}
 
-    if (origin_day > _month_day_count[origin_month]) {
+void TimerDateTime::inc_origin_day() {
+    origin_day = origin_day % _month_day_count[origin_month] + 1;
+}
+
+void TimerDateTime::inc_origin_month() {
+    origin_month = origin_month % 12 + 1;
+}
+
+void TimerDateTime::inc_origin_year() {
+    ++origin_year;
+
+    if (leap and origin_month == 2 and origin_day == _month_day_count[origin_month]) {
         origin_day = 1;
         ++origin_month;
-
-        if (origin_month > 12) {
-            origin_month = 1;
-            ++origin_year;
-
-            leap = is_leap(origin_year);
-        }
-        _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
     }
+
+    leap = is_leap(origin_year);
+    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+}
+
+void TimerDateTime::dec_origin_day() {
+    if (origin_day == 1)
+        origin_day = _month_day_count[origin_month];
+    else
+        --origin_day;
+}
+
+void TimerDateTime::dec_origin_month() {
+    if (origin_month == 1)
+        origin_month = 12;
+    else
+        --origin_month;
+}
+
+void TimerDateTime::dec_origin_year() {
+    --origin_year;
+
+    if (leap and origin_month == 2 and origin_day == _month_day_count[origin_month]) {
+        origin_day = 1;
+        ++origin_month;
+    }
+
+    leap = is_leap(origin_year);
+    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
 void StopwatchTime::tick(uint16_t tick_size) {

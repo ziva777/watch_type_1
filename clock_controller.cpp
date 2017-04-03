@@ -244,11 +244,13 @@ void ClockController::_dec_timer_type2(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
 }
 
 void ClockController::_inc_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state, DateTime &curr_dt) {
+    dt.normalize();
+
     if (state == Clock::S_TIMER_TYPE2_EDIT_DAYS)
-        ++dt.origin_day;
+        dt.inc_origin_day();
     else
     if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
-        ++dt.origin_month;
+        dt.inc_origin_month();
     else
     if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS) {
         if (dt.origin_year == curr_dt.year)
@@ -256,12 +258,23 @@ void ClockController::_inc_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
         else
             dt.origin_year = curr_dt.year;
     }
-
-    dt.normalize();
 }
 
 void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state, DateTime &curr_dt) {
+    dt.normalize();
 
+    if (state == Clock::S_TIMER_TYPE2_EDIT_DAYS)
+        dt.dec_origin_day();
+    else
+    if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
+        dt.dec_origin_month();
+    else
+    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS) {
+        if (dt.origin_year == curr_dt.year)
+            dt.origin_year = curr_dt.year + 1;
+        else
+            dt.origin_year = curr_dt.year;
+    }
 }
 
 void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, DateTime &dt) {

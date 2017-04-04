@@ -64,3 +64,11 @@ void Button::flop() {
         else if (_state == BUTTON_REPEAT)
             _state = BUTTON_WAIT_FOR_REPEAT;
 }
+
+bool Button::is_down() const {
+    return _button_state_curr == LOW;
+}
+
+bool Button::is_up() const {
+    return !is_down();
+}

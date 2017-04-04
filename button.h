@@ -15,6 +15,8 @@ class Button {
         bool pressed_hard() const;
         bool pressed() const;
         void flop();
+        bool is_down() const;
+        bool is_up() const;
 
     private:
         const uint16_t BOUNCE_INTERVAL = 5;

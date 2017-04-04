@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "datetime_trigger.h"
 
+class DateTime;
+
 class AlarmDateTime {
     public:
         uint8_t hour {0};
@@ -12,12 +14,22 @@ class AlarmDateTime {
         uint8_t day_pointer {1}; // 1 - monday
 
         bool on {false};
-        bool stoppped {false};
+        bool no_lock {true};
+        bool ringing {false};
+
+        void inc_minute();
+        void inc_hour();
+        void dec_minute();
+        void dec_hour();
+
+        void move_day_pointer();
+        void switch_day();
+
+        void tick(const DateTime &dt, uint16_t tick_size);
+        void tick3(const DateTime &dt, uint16_t tick_size);
 
     private:
 };
-
-class DateTime;
 
 class TimerDateTime {
     public:
@@ -37,6 +49,7 @@ class TimerDateTime {
 
         bool on {false};
         bool stoppped {true};
+        bool ringing {false};
         bool leap {false};
 
         void normalize();

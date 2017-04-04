@@ -45,6 +45,52 @@ uint8_t day_of_week(uint16_t d, uint16_t m, uint16_t y) {
     return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
 }
 
+void AlarmDateTime::inc_minute() {
+    minute = ++minute % 60;
+}
+
+void AlarmDateTime::inc_hour() {
+    hour = ++hour % 24;
+}
+
+void AlarmDateTime::dec_minute() {
+    (minute ? --minute : minute=59);
+}
+
+void AlarmDateTime::dec_hour() {
+    (hour ? --hour : hour=23);
+}
+
+void AlarmDateTime::move_day_pointer() {
+    day_pointer = ++day_pointer % 7 ;
+}
+
+void AlarmDateTime::switch_day() {
+    days[day_pointer] = (days[day_pointer] == 1 ? 0 : 1);
+}
+
+void AlarmDateTime::tick(const DateTime &dt, uint16_t tick_size) {
+    if (dt.hour == hour)
+        if (dt.minute == minute and no_lock) {
+            no_lock = false;
+            ringing = true;
+        } else {
+            no_lock = (dt.minute != minute);
+        }
+}
+
+void AlarmDateTime::tick3(const DateTime &dt, uint16_t tick_size) {
+    if (days[dt.day_of_week])
+        if (dt.hour == hour) {   
+            if (dt.minute == minute and no_lock) {
+                no_lock = false;
+                ringing = true;
+            } else {
+                no_lock = (dt.minute != minute);
+            }
+        }
+}
+
 void TimerDateTime::normalize() {
     leap = is_leap(origin_year);
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
@@ -123,14 +169,13 @@ void TimerDateTime::tick_countdown(uint16_t tick_size) {
                                 minute * 60UL + 
                                   second;
 
-        if (total_sec)
+        if (total_sec > 1)
             --total_sec;
         else {
+            total_sec = 0;
             on = false;
             stoppped = true;
-            tone(6, 440, 50);
-            // tone(6, 14400, 150);
-            // tone(6, 440, 50);
+            ringing = true;
         }
 
         hour = total_sec / 3600UL;
@@ -297,16 +342,19 @@ void DateTime::inc_hour() {
 
 void DateTime::inc_day() {
     (day < days_in_month() ? ++day : day = 1);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::inc_month() {
     (month < 12 ? ++month : month = 1);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::inc_year() {
     ++year;
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_second() {
@@ -319,20 +367,24 @@ void DateTime::dec_minute() {
 
 void DateTime::dec_hour() {
     (hour ? --hour : hour=23);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_day() {
     (day > 1 ? --day : day = days_in_month());
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_month() {
     (month > 1 ? --month : month = 1);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_year() {
     --year;
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    day_of_week = ::day_of_week(day, month, year);
 }
 
 uint8_t DateTime::days_in_month() const {

@@ -63,6 +63,7 @@ class Clock {
         StopwatchTime stopwatch;
 
         bool hour_signal;
+        bool hour_signal_done;
 
         void tick(uint16_t tick_size); // tick_size in mS
 

@@ -140,7 +140,7 @@ void Display::print_alarm_type3(const AlarmDateTime &dt) {
 void Display::print_signal(bool on) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
-    sprintf(buff, "%s       ", (on ? "on" : "off"));
+    sprintf(buff, "%s       ", (on ? "on " : "off"));
     print_text(0, 4, buff);
 
     memset(buff, ' ', sizeof(buff) - 1);

@@ -1,4 +1,5 @@
 #include "clock_controller.h"
+#include <Arduino.h>
 
 ClockController::ClockController(Clock &c, Display &d)
     : _clock(c), _display(d) 
@@ -60,43 +61,26 @@ void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) 
 
 void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
-        ++dt.minute;
-
-        if (dt.minute == 60) {
-            dt.minute = 0;
-            dt.hour = ++dt.hour % 24;
-        }
+        dt.inc_minute();
     }
     else 
     if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
-        dt.hour = ++dt.hour % 24;
+        dt.inc_hour();
     else
     if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
-        dt.days[dt.day_pointer] = (dt.days[dt.day_pointer] == 1 ? 0 : 1);
+        dt.switch_day();
     }
 }
 
 void ClockController::_dec_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
-        if (dt.minute != 0)
-            --dt.minute;
-        else {
-            dt.minute = 59;
-
-            if (dt.hour)
-                --dt.hour;
-            else
-                dt.hour = 23;
-        }
+        dt.dec_minute();
     } else 
     if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS) {
-        if (dt.hour)
-            --dt.hour;
-        else
-            dt.hour = 23;
+        dt.dec_hour();
     } else 
     if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
-        dt.day_pointer = ++dt.day_pointer % 7 ;
+        dt.move_day_pointer();
     }
 }
 

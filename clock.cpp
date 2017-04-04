@@ -1,4 +1,5 @@
 #include "clock.h"
+#include <Arduino.h>
 
 void Clock::next_state() {
     _state_prev = _state_curr;
@@ -182,11 +183,54 @@ void Clock::tick(uint16_t tick_size) {
     primary_datetime.tick(tick_size);
     secondary_datetime.tick(tick_size);
 
+    if (alaram1_datetime.on) {
+        alaram1_datetime.tick(primary_datetime, tick_size);
+
+        if (alaram1_datetime.ringing) {
+            alaram1_datetime.ringing = false;
+            tone(6, 440, 100);
+        }
+    }
+
+    if (alaram2_datetime.on) {
+        alaram2_datetime.tick(primary_datetime, tick_size);
+
+        if (alaram2_datetime.ringing) {
+            alaram2_datetime.ringing = false;
+            alaram2_datetime.on = false;
+            tone(6, 440 * 2, 100);
+        }
+    }
+
+    if (alaram3_datetime.on) {
+        alaram3_datetime.tick3(primary_datetime, tick_size);
+
+        if (alaram3_datetime.ringing) {
+            alaram3_datetime.ringing = false;
+            tone(6, 440 * 3, 100);
+        }
+    }
+
+    if (primary_datetime.minute == 0) {
+        if (substate() == S_NONE)   
+            if (hour_signal and not hour_signal_done) {
+                hour_signal_done = true;
+                tone(6, 440 * 4, 100);
+            }
+    } else 
+    if (primary_datetime.minute == 59)
+        hour_signal_done = false;
+
     if (stopwatch.on and !stopwatch.stoppped) {
         stopwatch.tick(tick_size);
     }
 
     if (timer1_datetime.on and !timer1_datetime.stoppped) {
         timer1_datetime.tick_countdown(tick_size);
+
+        if (timer1_datetime.ringing) {
+            timer1_datetime.ringing = false;
+            tone(6, 440 * 5, 100);
+        }
     }
 }

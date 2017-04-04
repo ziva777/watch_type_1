@@ -1,4 +1,5 @@
 #include "datetime.h"
+#include <Arduino.h>
 
 #define CURR_HOUR ((__TIME__[0] - 48) * 10 + (__TIME__[1] - 48))
 #define CURR_MINUTE ((__TIME__[3] - 48) * 10 + (__TIME__[4] - 48))
@@ -99,6 +100,16 @@ void TimerDateTime::launch_countdown() {
     hour = origin_hour;
     minute = origin_minute;
     second = origin_second;
+
+    
+
+    ms = 0;
+}
+
+void TimerDateTime::launch_countdown(DateTime &dt) {
+    origin_hour = dt.hour;
+    origin_minute = dt.minute;
+    origin_second = dt.second-1;
     ms = 0;
 }
 
@@ -116,6 +127,10 @@ void TimerDateTime::tick_countdown(uint16_t tick_size) {
             --total_sec;
         else {
             on = false;
+            stoppped = true;
+            tone(6, 440, 50);
+            // tone(6, 14400, 150);
+            // tone(6, 440, 50);
         }
 
         hour = total_sec / 3600UL;
@@ -268,24 +283,50 @@ void DateTime::tick(uint16_t tick_size) {
         trigger.year_flip();
 }
 
+void DateTime::inc_second() {
+    (second < 30 ? second = 30 : second = 60);
+}
+
+void DateTime::inc_minute() {
+    minute = ++minute % 60;
+}
+
+void DateTime::inc_hour() {
+    hour = ++hour % 24;
+}
+
+void DateTime::inc_day() {
+    (day < days_in_month() ? ++day : day = 1);
+}
+
+void DateTime::inc_month() {
+    (month < 12 ? ++month : month = 1);
+}
+
+void DateTime::inc_year() {
+    ++year;
+    _leap = ::is_leap(year);
+    _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+}
+
 void DateTime::dec_second() {
-    
+    (second < 30 ? second = 0 : second = 30);
 }
 
 void DateTime::dec_minute() {
-    
+    (minute ? --minute : minute=59);
 }
 
 void DateTime::dec_hour() {
-    
+    (hour ? --hour : hour=23);
 }
 
 void DateTime::dec_day() {
-    
+    (day > 1 ? --day : day = days_in_month());
 }
 
 void DateTime::dec_month() {
-    
+    (month > 1 ? --month : month = 1);
 }
 
 void DateTime::dec_year() {
@@ -298,61 +339,69 @@ uint8_t DateTime::days_in_month() const {
     return _month_day_count[month];
 }
 
-void DateTime::normalize() {
-    trigger.flop();
-    _hour_buff = hour;
-    _minute_buff = minute;
-    _second_buff = second;
-    _day_buff = day;
-    _month_buff = month;
-    _year_buff = year;
-
-    second += ms / 1000;
-    ms %= 1000;
-
-    minute += second / 60;
-    second %= 60;
-
-    if (minute >= 60) {
-        minute %= 60;
-        ++hour;
-    }
-
-    if (hour == 24) {
-        hour = 0;
-        ++day;
-    }
-
+void DateTime::resolve_febrary_collision() {
     if (day > _month_day_count[month]) {
-        day = 1;
-        ++month;
+        // ++month;
+        // day = 1;
+        day = _month_day_count[month];
     }
-
-    day_of_week = ::day_of_week(day, month, year);
-
-    if (month > 12) {
-        month = 1;
-        ++year;
-
-        _leap = ::is_leap(year);
-    }
-    _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
-
-    if (hour != _hour_buff)
-        trigger.hour_flip();
-
-    if (minute != _minute_buff)
-        trigger.minute_flip();
-
-    if (second != _second_buff)
-        trigger.second_flip();
-
-    if (day != _day_buff)
-        trigger.day_flip();
-
-    if (month != _month_buff)
-        trigger.month_flip();
-
-    if (year != _year_buff)
-        trigger.year_flip();
 }
+
+// void DateTime::normalize() {
+//     trigger.flop();
+//     _hour_buff = hour;
+//     _minute_buff = minute;
+//     _second_buff = second;
+//     _day_buff = day;
+//     _month_buff = month;
+//     _year_buff = year;
+
+//     second += ms / 1000;
+//     ms %= 1000;
+
+//     minute += second / 60;
+//     second %= 60;
+
+//     if (minute >= 60) {
+//         minute %= 60;
+//         ++hour;
+//     }
+
+//     if (hour == 24) {
+//         hour = 0;
+//         ++day;
+//     }
+
+//     if (day > _month_day_count[month]) {
+//         day = 1;
+//         ++month;
+//     }
+
+//     day_of_week = ::day_of_week(day, month, year);
+
+//     if (month > 12) {
+//         month = 1;
+//         ++year;
+
+//         _leap = ::is_leap(year);
+//     }
+//     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+
+//     if (hour != _hour_buff)
+//         trigger.hour_flip();
+
+//     if (minute != _minute_buff)
+//         trigger.minute_flip();
+
+//     if (second != _second_buff)
+//         trigger.second_flip();
+
+//     if (day != _day_buff)
+//         trigger.day_flip();
+
+//     if (month != _month_buff)
+//         trigger.month_flip();
+
+//     if (year != _year_buff)
+//         trigger.year_flip();
+// }

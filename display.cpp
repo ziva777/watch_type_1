@@ -155,7 +155,7 @@ void Display::print_timer_type1(const TimerDateTime &dt) {
                   dt.origin_hour,
                   dt.origin_minute,
                   dt.origin_second,
-                  (dt.on ? "on " : "off"));
+                  (dt.stoppped ? "off" : "on "));
     print_text(0, 4, buff);
 
     memset(buff, 0, sizeof(buff));
@@ -178,7 +178,7 @@ void Display::print_timer_type3(const TimerDateTime &dt) {
                   dt.origin_day,
                   dt.origin_month,
                   dt.origin_year % 100,
-                  (dt.on ? "on " : "off"));
+                  (dt.stoppped ? "off" : "on "));
     print_text(0, 4, buff);
 
     memset(buff, 0, 16);
@@ -369,21 +369,21 @@ void Display::print_edit_timer_type1(const TimerDateTime &dt, Clock::CLOCK_SUBST
                           dt.origin_hour,
                           dt.origin_minute,
                           //dt.origin_second,
-                          (dt.on ? "on " : "off"));
+                          (dt.stoppped ? "off" : "on "));
         else
         if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
             sprintf(buff, "%2u:  :%02u %s", 
                           dt.origin_hour,
                           // dt.origin_minute,
                           dt.origin_second,
-                          (dt.on ? "on " : "off"));
+                          (dt.stoppped ? "off" : "on "));
         else
         if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
             sprintf(buff, "  :%02u:%02u %s", 
                           // dt.origin_hour,
                           dt.origin_minute,
                           dt.origin_second,
-                          (dt.on ? "on " : "off"));
+                          (dt.stoppped ? "off" : "on "));
 
         print_text(0, 4, buff);
     } else {

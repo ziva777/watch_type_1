@@ -17,6 +17,8 @@ class AlarmDateTime {
     private:
 };
 
+class DateTime;
+
 class TimerDateTime {
     public:
         uint8_t origin_hour {0};
@@ -34,7 +36,7 @@ class TimerDateTime {
         uint16_t day {0};
 
         bool on {false};
-        bool stoppped {false};
+        bool stoppped {true};
         bool leap {false};
 
         void normalize();
@@ -48,6 +50,7 @@ class TimerDateTime {
         void dec_origin_year();
 
         void launch_countdown();
+        void launch_countdown(DateTime &dt);
         void tick_countdown(uint16_t tick_size);
         void reset_countdown();
 
@@ -112,6 +115,13 @@ class DateTime {
         uint8_t days_in_month() const;
         bool leap() const { return _leap; };
 
+        void inc_second();
+        void inc_minute();
+        void inc_hour();
+        void inc_day();
+        void inc_month();
+        void inc_year();
+
         void dec_second();
         void dec_minute();
         void dec_hour();
@@ -119,7 +129,8 @@ class DateTime {
         void dec_month();
         void dec_year();
 
-        void normalize();
+        // void normalize();
+        void resolve_febrary_collision();
 
     private:
         bool _leap {false};

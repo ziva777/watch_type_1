@@ -16,62 +16,46 @@ void ClockController::setup(){
 
 void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        (dt.second < 30 ? dt.second = 30 : dt.second = 60);
+        dt.inc_second();
     else 
     if (state == Clock::S_CLOCK_EDIT_MINUTES)
-        dt.minute = ++dt.minute % 60;
+        dt.inc_minute();
     else 
     if (state == Clock::S_CLOCK_EDIT_HOURS)
-        dt.hour = ++dt.hour % 24;
+        dt.inc_hour();
     else 
     if (state == Clock::S_CLOCK_EDIT_DAYS)
-        (dt.day < dt.days_in_month() ? ++dt.day : dt.day = 1);
+        dt.inc_day();
     else 
     if (state == Clock::S_CLOCK_EDIT_MONTHS)
-        (dt.month < 12 ? ++dt.month : dt.month = 1);
+        dt.inc_month();
     else 
     if (state == Clock::S_CLOCK_EDIT_YEARS)
-        ++dt.year;
+        dt.inc_year();
 
-    // dt.normalize();
+    dt.resolve_febrary_collision();
 }
 
 void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        (dt.second < 30 ? dt.second = 0 : dt.second = 30);
+        dt.dec_second();
     else 
     if (state == Clock::S_CLOCK_EDIT_MINUTES)
-        (dt.minute ? --dt.minute : dt.minute=59);
+        dt.dec_minute();
     else 
     if (state == Clock::S_CLOCK_EDIT_HOURS)
-        (dt.hour ? --dt.hour : dt.hour=23);
+        dt.dec_hour();
     else 
     if (state == Clock::S_CLOCK_EDIT_DAYS)
-        (dt.day > 1 ? --dt.day : dt.day = dt.days_in_month());
+        dt.dec_day();
     else 
     if (state == Clock::S_CLOCK_EDIT_MONTHS)
-        (dt.month > 1 ? --dt.month : dt.month = 1);
+        dt.dec_month();
     else 
     if (state == Clock::S_CLOCK_EDIT_YEARS)
-        --dt.year;
+        dt.dec_year();
 
-    // if (state == Clock::S_CLOCK_EDIT_SECONDS)
-    //     dt.second = 0;
-    // else 
-    // if (state == Clock::S_CLOCK_EDIT_MINUTES)
-    //     dt.dec_minute();
-    // else 
-    // if (state == Clock::S_CLOCK_EDIT_HOURS)
-    //     dt.dec_hour();
-    // else 
-    // if (state == Clock::S_CLOCK_EDIT_DAYS)
-    //     dt.dec_day();
-    // else 
-    // if (state == Clock::S_CLOCK_EDIT_MONTHS)
-    //     dt.dec_month();
-    // else 
-    // if (state == Clock::S_CLOCK_EDIT_YEARS)
-    //     dt.dec_year();
+    dt.resolve_febrary_collision();
 }
 
 void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
@@ -456,16 +440,26 @@ void ClockController::sync(){
                 if (_button2.pressed_hard()) {
                     _clock.begin_substate();
                     dt.on = false;
+                    dt.stoppped = true;
                 } else 
                 if (_button2.pressed()) {
-                    dt.on = !dt.on;
-
-                    if (dt.on)
+                    if (dt.stoppped and not dt.on) {
+                        dt.on = true;
+                        dt.stoppped = false;
                         dt.launch_countdown();
+                    } else
+                    if (not dt.stoppped and dt.on) {
+                        dt.stoppped = true;
+                    } else 
+                    if (dt.stoppped and dt.on) {
+                        dt.stoppped = false;
+                    }   
                 } else 
                 if (_button3.pressed_hard()) {
-                    if (dt.on)
+                    if (dt.on) {
                         dt.on = false;
+                        dt.stoppped = true;
+                    }
 
                     dt.reset_countdown();
                 }
@@ -490,7 +484,38 @@ void ClockController::sync(){
             TimerDateTime &dt = _clock.timer2_datetime;
 
             if (substate == Clock::S_NONE) {
+
                 if (_button1.pressed()) {
+                    _clock.next_state();
+                    _display.print_clock_state(_clock);
+                } else
+                if (_button2.pressed_hard()) {
+                    _clock.begin_substate();
+                    dt.on = false;
+                    dt.stoppped = true;
+                } else 
+                if (_button2.pressed()) {
+                    if (dt.stoppped and not dt.on) {
+                        dt.on = true;
+                        dt.stoppped = false;
+                        dt.launch_countdown(_clock.primary_datetime);
+                    } else
+                    if (not dt.stoppped and dt.on) {
+                        dt.stoppped = true;
+                    } else 
+                    if (dt.stoppped and dt.on) {
+                        dt.stoppped = false;
+                    }   
+                } else 
+                if (_button3.pressed_hard()) {
+                    if (dt.on) {
+                        dt.on = false;
+                        dt.stoppped = true;
+                    }
+
+                    dt.reset_countdown();
+                }
+                /*if (_button1.pressed()) {
                     _clock.next_state();
                     _display.print_clock_state(_clock);
                 } else
@@ -500,7 +525,7 @@ void ClockController::sync(){
                 } else 
                 if (_button2.pressed()) {
                     dt.on = !dt.on;
-                }
+                }*/
             } else {
                 if (_button1.pressed())
                     _clock.next_substate();

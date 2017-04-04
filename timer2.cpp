@@ -1,8 +1,8 @@
 #include "timer2.h"
 
-ISR(TIMER2_COMPA_vect) {
-    Timer2::instance().timer_callback_function();
-}
+// ISR(TIMER2_COMPA_vect) {
+//     Timer2::instance().timer_callback_function();
+// }
 
 const Timer2 & Timer2::instance() {
     static Timer2 timer;

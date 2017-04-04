@@ -233,4 +233,15 @@ void Clock::tick(uint16_t tick_size) {
             tone(6, 440 * 5, 100);
         }
     }
+
+    if (timer2_datetime.on and !timer2_datetime.stoppped) {
+        timer2_datetime.tick_countdown2(primary_datetime, tick_size);
+
+        if (timer2_datetime.ringing) {
+            timer2_datetime.on = false;
+            timer2_datetime.stoppped = true;
+            timer2_datetime.ringing = false;
+            tone(6, 440 * 5, 150);
+        }
+    }
 }

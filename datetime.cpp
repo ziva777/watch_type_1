@@ -146,16 +146,13 @@ void TimerDateTime::launch_countdown() {
     hour = origin_hour;
     minute = origin_minute;
     second = origin_second;
-
-    
-
     ms = 0;
 }
 
 void TimerDateTime::launch_countdown(DateTime &dt) {
-    origin_hour = dt.hour;
-    origin_minute = dt.minute;
-    origin_second = dt.second-1;
+    // origin_hour = dt.hour;
+    // origin_minute = dt.minute;
+    // origin_second = dt.second;
     ms = 0;
 }
 
@@ -181,6 +178,24 @@ void TimerDateTime::tick_countdown(uint16_t tick_size) {
         hour = total_sec / 3600UL;
         minute = (total_sec - hour * 3600UL) / 60UL;
         second = total_sec - hour * 3600UL - minute * 60UL;
+    }
+}
+
+void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
+    uint32_t total_sec_curr = dt.hour * 3600UL + dt.minute * 60UL + dt.second;
+    uint32_t total_sec_target = origin_hour * 3600UL + origin_minute * 60UL + origin_second;
+    uint32_t total_sec = (total_sec_curr < total_sec_target ? 
+                (total_sec_target - total_sec_curr) : 
+                (86400UL - total_sec_curr + total_sec_target));
+
+    hour = total_sec / 3600UL;
+    minute = (total_sec - hour * 3600UL) / 60UL;
+    second = total_sec - hour * 3600UL - minute * 60UL;
+
+    if (total_sec == 86400UL) {
+        on = false;
+        stoppped = true;
+        ringing = true;
     }
 }
 

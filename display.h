@@ -50,6 +50,7 @@ class Display {
         uint8_t _brightness;
 
         bool _blink() const;
+        void _load_digit(uint8_t d, uint8_t p);
 };
 
 #endif // _DISPLAY_H_

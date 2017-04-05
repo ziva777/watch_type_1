@@ -18,6 +18,118 @@ static char *DAY_NAME[7] = {
     "Sa"
 };
 
+namespace DIGIT {
+    char ZERO[8] = {
+        0b11111,
+        0b11111,
+        0b11011,
+        0b11011,
+        0b11011,
+        0b11011,
+        0b11111,
+        0b11111
+    };
+
+    char ONE[8] = {
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011
+    };
+
+    char TWO[8] = {
+        0b11111,
+        0b11111,
+        0b00011,
+        0b11111,
+        0b11111,
+        0b11000,
+        0b11111,
+        0b11111
+    };
+
+    char THREE[8] = {
+        0b11111,
+        0b11111,
+        0b00011,
+        0b01111,
+        0b01111,
+        0b00011,
+        0b11111,
+        0b11111
+    };
+
+    char FOUR[8] = {
+        0b11000,
+        0b11011,
+        0b11011,
+        0b11111,
+        0b11111,
+        0b00011,
+        0b00011,
+        0b00011
+    };
+
+    char FIVE[8] = {
+        0b11111,
+        0b11111,
+        0b11000,
+        0b11111,
+        0b11111,
+        0b00011,
+        0b11111,
+        0b11111
+    };
+
+    char SIX[8] = {
+        0b11111,
+        0b11111,
+        0b11000,
+        0b11111,
+        0b11111,
+        0b11011,
+        0b11111,
+        0b11111
+    };
+
+    char SEVEN[8] = {
+        0b11111,
+        0b11111,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011,
+        0b00011
+    };
+
+    char EIGHT[8] = {
+        0b11111,
+        0b11111,
+        0b11011,
+        0b11111,
+        0b11111,
+        0b11011,
+        0b11111,
+        0b11111
+    };
+
+    char NINE[8] = {
+        0b11111,
+        0b11111,
+        0b11011,
+        0b11111,
+        0b11111,
+        0b00011,
+        0b11111,
+        0b11111
+    };
+};
+
 Display::Display() 
     : _lcd(_RS_, _ENABLE_, _D0_, _D1_, _D2_, _D3_) 
 {
@@ -30,6 +142,17 @@ void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
 
     pinMode(_contrast_pin, OUTPUT);
     pinMode(_brightness_pin, OUTPUT);
+
+    // _lcd.createChar(0, DIGIT::ZERO);
+    // _lcd.createChar(1, DIGIT::ONE);
+    // _lcd.createChar(2, DIGIT::TWO);
+    // _lcd.createChar(3, DIGIT::THREE);
+    // _lcd.createChar(4, DIGIT::FOUR);
+    // _lcd.createChar(5, DIGIT::FIVE);
+    // _lcd.createChar(6, DIGIT::SIX);
+    // _lcd.createChar(7, DIGIT::SEVEN);
+    // _lcd.createChar(8, DIGIT::EIGHT);
+    // _lcd.createChar(9, DIGIT::NINE);
 
     _lcd.begin(16, 2);
 }
@@ -74,6 +197,44 @@ void Display::print_clock_state(const Clock &clock) {
     }
 }
 
+void Display::_load_digit(uint8_t d, uint8_t p) {
+    char *c = NULL;
+
+    switch (d) {
+        case 0:
+            c = DIGIT::ZERO;
+            break;
+        case 1:
+            c = DIGIT::ONE;
+            break;
+        case 2:
+            c = DIGIT::TWO;
+            break;
+        case 3:
+            c = DIGIT::THREE;
+            break;
+        case 4:
+            c = DIGIT::FOUR;
+            break;
+        case 5:
+            c = DIGIT::FIVE;
+            break;
+        case 6:
+            c = DIGIT::SIX;
+            break;
+        case 7:
+            c = DIGIT::SEVEN;
+            break;
+        case 8:
+            c = DIGIT::EIGHT;
+            break;
+        case 9:
+            c = DIGIT::NINE;
+            break;
+    }
+    _lcd.createChar(p, c);
+}
+
 void Display::print_clock_time(const DateTime &dt) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
@@ -82,6 +243,18 @@ void Display::print_clock_time(const DateTime &dt) {
                   dt.minute,
                   dt.second);
     print_text(0, 3, buff);
+
+    // char c = dt.hour / 10;
+    // char i = 0;
+    // _load_digit(c, 0);
+    // _lcd.setCursor(3, 0);
+    
+    // c = dt.hour % 10;
+    // _load_digit(c, 1);
+    // _lcd.setCursor(4, 0);
+
+    // _lcd.write(i++);
+    // _lcd.write(i);
 }
 
 void Display::print_clock_date(const DateTime &dt) {

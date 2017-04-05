@@ -468,7 +468,6 @@ void ClockController::sync(){
             TimerDateTime &dt = _clock.timer2_datetime;
 
             if (substate == Clock::S_NONE) {
-
                 if (_button1.pressed()) {
                     _clock.next_state();
                     _display.print_clock_state(_clock);
@@ -499,17 +498,6 @@ void ClockController::sync(){
 
                     dt.reset_countdown();
                 }
-                /*if (_button1.pressed()) {
-                    _clock.next_state();
-                    _display.print_clock_state(_clock);
-                } else
-                if (_button2.pressed_hard()) {
-                    _clock.begin_substate();
-                    dt.on = false;
-                } else 
-                if (_button2.pressed()) {
-                    dt.on = !dt.on;
-                }*/
             } else {
                 if (_button1.pressed())
                     _clock.next_substate();

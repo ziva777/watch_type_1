@@ -45,6 +45,10 @@ uint8_t day_of_week(uint16_t d, uint16_t m, uint16_t y) {
     return (d += m<3 ? y-- : y-2, 23*m/9 + d + 4 + y/4 - y/100 + y/400) % 7;
 }
 
+uint16_t day_number(uint16_t d, uint16_t m, uint16_t y) {
+    return 365*y + y/4 - y/100 + (m*306 + 5)/10 + (d - 1);
+}
+
 void AlarmDateTime::inc_minute() {
     minute = ++minute % 60;
 }
@@ -150,10 +154,11 @@ void TimerDateTime::launch_countdown() {
 }
 
 void TimerDateTime::launch_countdown(DateTime &dt) {
-    // origin_hour = dt.hour;
-    // origin_minute = dt.minute;
-    // origin_second = dt.second;
     ms = 0;
+}
+
+void TimerDateTime::launch_countdown3(DateTime &dt) {
+    ms = 0;   
 }
 
 void TimerDateTime::tick_countdown(uint16_t tick_size) {
@@ -196,6 +201,42 @@ void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
         on = false;
         stoppped = true;
         ringing = true;
+    }
+}
+
+void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
+    if (origin_year >= dt.year and origin_month >= dt.month and origin_day >= dt.day) {
+        uint16_t total_day = 0;
+        uint16_t day_curr = day_number(dt.day, dt.month, dt.year);
+        uint16_t day_target = day_number(origin_day, origin_month, origin_year);
+
+        for (uint16_t i = dt.year; i != origin_year; ++i)
+            total_day += (::is_leap(i) ? 366 : 365);
+
+        total_day = (day_curr < day_target ? 
+                (day_target - day_curr) : 
+                ((::is_leap(dt.year) ? 366 : 365) - day_curr + day_target));
+
+        day = total_day - 1;
+
+        hour = 23 - dt.hour;
+        minute = 59 - dt.minute;
+        second = 59 - dt.second;
+
+        if (day == 0)
+            if ((hour == 0) and (minute == 0) and (second == 0)) {
+                on = false;
+                stoppped = true;
+                ringing = true;
+            }
+    } else {
+        // no sence
+        day = 0;
+        hour = 0;
+        minute = 0;
+        second = 0;
+        on = false;
+        stoppped = true;
     }
 }
 
@@ -274,8 +315,8 @@ DateTime::DateTime()
     minute = CURR_MINUTE;
     second = CURR_SECOND + 5;
 
-    day = 31;
-    month = 3;
+    day = 5;
+    month = 4;
     year = 2017;
     day_of_week = ::day_of_week(day, month, year);
     _leap = ::is_leap(year);
@@ -408,67 +449,6 @@ uint8_t DateTime::days_in_month() const {
 
 void DateTime::resolve_febrary_collision() {
     if (day > _month_day_count[month]) {
-        // ++month;
-        // day = 1;
         day = _month_day_count[month];
     }
 }
-
-// void DateTime::normalize() {
-//     trigger.flop();
-//     _hour_buff = hour;
-//     _minute_buff = minute;
-//     _second_buff = second;
-//     _day_buff = day;
-//     _month_buff = month;
-//     _year_buff = year;
-
-//     second += ms / 1000;
-//     ms %= 1000;
-
-//     minute += second / 60;
-//     second %= 60;
-
-//     if (minute >= 60) {
-//         minute %= 60;
-//         ++hour;
-//     }
-
-//     if (hour == 24) {
-//         hour = 0;
-//         ++day;
-//     }
-
-//     if (day > _month_day_count[month]) {
-//         day = 1;
-//         ++month;
-//     }
-
-//     day_of_week = ::day_of_week(day, month, year);
-
-//     if (month > 12) {
-//         month = 1;
-//         ++year;
-
-//         _leap = ::is_leap(year);
-//     }
-//     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
-
-//     if (hour != _hour_buff)
-//         trigger.hour_flip();
-
-//     if (minute != _minute_buff)
-//         trigger.minute_flip();
-
-//     if (second != _second_buff)
-//         trigger.second_flip();
-
-//     if (day != _day_buff)
-//         trigger.day_flip();
-
-//     if (month != _month_buff)
-//         trigger.month_flip();
-
-//     if (year != _year_buff)
-//         trigger.year_flip();
-// }

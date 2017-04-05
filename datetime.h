@@ -64,8 +64,10 @@ class TimerDateTime {
 
         void launch_countdown();
         void launch_countdown(DateTime &dt);
+        void launch_countdown3(DateTime &dt);
         void tick_countdown(uint16_t tick_size);
         void tick_countdown2(const DateTime &dt, uint16_t tick_size);
+        void tick_countdown3(const DateTime &dt, uint16_t tick_size);
         void reset_countdown();
 
     private:

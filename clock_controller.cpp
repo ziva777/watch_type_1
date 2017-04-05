@@ -516,7 +516,7 @@ void ClockController::sync(){
             break;
         }
         case Clock::S_TIMER3: {
-            TimerDateTime &dt = _clock.timer3_datetime;
+        	TimerDateTime &dt = _clock.timer3_datetime;
 
             if (substate == Clock::S_NONE) {
                 if (_button1.pressed()) {
@@ -526,14 +526,28 @@ void ClockController::sync(){
                 if (_button2.pressed_hard()) {
                     _clock.begin_substate();
                     dt.on = false;
-
-                    dt.origin_day = _clock.primary_datetime.day;
-                    dt.origin_month = _clock.primary_datetime.month;
-                    dt.origin_year = _clock.primary_datetime.year;
-                    dt.leap = _clock.primary_datetime.leap();
+                    dt.stoppped = true;
                 } else 
                 if (_button2.pressed()) {
-                    dt.on = !dt.on;
+                    if (dt.stoppped and not dt.on) {
+                        dt.on = true;
+                        dt.stoppped = false;
+                        dt.launch_countdown3(_clock.primary_datetime);
+                    } else
+                    if (not dt.stoppped and dt.on) {
+                        dt.stoppped = true;
+                    } else 
+                    if (dt.stoppped and dt.on) {
+                        dt.stoppped = false;
+                    }   
+                } else 
+                if (_button3.pressed_hard()) {
+                    if (dt.on) {
+                        dt.on = false;
+                        dt.stoppped = true;
+                    }
+
+                    dt.reset_countdown();
                 }
             } else {
                 if (_button1.pressed())
@@ -551,6 +565,41 @@ void ClockController::sync(){
                     _inc_timer_type3(dt, substate, _clock.primary_datetime);
             }
             break;
+            // TimerDateTime &dt = _clock.timer3_datetime;
+
+            // if (substate == Clock::S_NONE) {
+            //     if (_button1.pressed()) {
+            //         _clock.next_state();
+            //         _display.print_clock_state(_clock);
+            //     } else
+            //     if (_button2.pressed_hard()) {
+            //         _clock.begin_substate();
+            //         dt.on = false;
+
+            //         dt.origin_day = _clock.primary_datetime.day;
+            //         dt.origin_month = _clock.primary_datetime.month;
+            //         dt.origin_year = _clock.primary_datetime.year;
+            //         dt.leap = _clock.primary_datetime.leap();
+            //     } else 
+            //     if (_button2.pressed()) {
+            //         dt.on = !dt.on;
+            //     }
+            // } else {
+            //     if (_button1.pressed())
+            //         _clock.next_substate();
+
+            //     if (_button2.pressed()) {
+            //         _clock.end_substate();
+            //         substate = _clock.substate();
+            //     }
+
+            //     if (_button3.pressed() or _button3.pressed_repeat())
+            //         _dec_timer_type3(dt, substate, _clock.primary_datetime);
+
+            //     if (_button4.pressed() or _button4.pressed_repeat())
+            //         _inc_timer_type3(dt, substate, _clock.primary_datetime);
+            // }
+            // break;
         }
         case Clock::S_STOPWATCH: {
             if (_button2.pressed()) {

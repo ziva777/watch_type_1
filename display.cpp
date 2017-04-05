@@ -1,12 +1,5 @@
 #include "display.h"
-
-// For LiquidCrystal
-static const uint8_t _RS_ = 8; 
-static const uint8_t _ENABLE_ = 9;
-static const uint8_t _D0_ = 4;
-static const uint8_t _D1_ = 5; 
-static const uint8_t _D2_ = A7; 
-static const uint8_t _D3_ = 7;
+#include "settings.h"
 
 static char *DAY_NAME[7] = {
     "Su",
@@ -131,7 +124,8 @@ namespace DIGIT {
 };
 
 Display::Display() 
-    : _lcd(_RS_, _ENABLE_, _D0_, _D1_, _D2_, _D3_) 
+    : _lcd(Pin::Display::RS, Pin::Display::ENABLE, 
+            Pin::Display::D0, Pin::Display::D1, Pin::Display::D2, Pin::Display::D3) 
 {
     
 }
@@ -142,17 +136,6 @@ void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
 
     pinMode(_contrast_pin, OUTPUT);
     pinMode(_brightness_pin, OUTPUT);
-
-    // _lcd.createChar(0, DIGIT::ZERO);
-    // _lcd.createChar(1, DIGIT::ONE);
-    // _lcd.createChar(2, DIGIT::TWO);
-    // _lcd.createChar(3, DIGIT::THREE);
-    // _lcd.createChar(4, DIGIT::FOUR);
-    // _lcd.createChar(5, DIGIT::FIVE);
-    // _lcd.createChar(6, DIGIT::SIX);
-    // _lcd.createChar(7, DIGIT::SEVEN);
-    // _lcd.createChar(8, DIGIT::EIGHT);
-    // _lcd.createChar(9, DIGIT::NINE);
 
     _lcd.begin(16, 2);
 }
@@ -243,18 +226,6 @@ void Display::print_clock_time(const DateTime &dt) {
                   dt.minute,
                   dt.second);
     print_text(0, 3, buff);
-
-    // char c = dt.hour / 10;
-    // char i = 0;
-    // _load_digit(c, 0);
-    // _lcd.setCursor(3, 0);
-    
-    // c = dt.hour % 10;
-    // _load_digit(c, 1);
-    // _lcd.setCursor(4, 0);
-
-    // _lcd.write(i++);
-    // _lcd.write(i);
 }
 
 void Display::print_clock_date(const DateTime &dt) {

@@ -1,6 +1,8 @@
 #ifndef _TIMER1_H_
 #define _TIMER1_H_
 
+// Timer1 as singletone
+
 #include <Arduino.h>
 
 class Timer1 {

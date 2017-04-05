@@ -9,8 +9,8 @@ ClockController::ClockController(Clock &c, Display &d)
 
 void ClockController::setup(){
     _display.setup(Pin::CONTRAST, Pin::BRIGHTNESS);
-    _display.set_contrast(55);
-    _display.set_brightness(50);
+    _display.set_contrast(Default::CONTRAST);
+    _display.set_brightness(Default::BRIGHTNESS);
     _display.print_clock_state(_clock);
     _display.print_clock_datetime(_clock.primary_datetime);
 }
@@ -668,7 +668,7 @@ void ClockController::sync(){
 }
 
 void ClockController::timer1_sync() {
-    _clock.tick(TICK_SIZE);
+    _clock.tick(Default::TICK_SIZE);
 }
 
 void ClockController::timer2_sync() {

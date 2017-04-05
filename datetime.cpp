@@ -317,9 +317,6 @@ DateTime::DateTime()
     minute = CURR_MINUTE;
     second = CURR_SECOND + 5;
 
-    day = 5;
-    month = 4;
-    year = 2017;
     day_of_week = ::day_of_week(day, month, year);
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);

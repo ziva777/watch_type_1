@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "datetime_trigger.h"
+#include "settings.h"
 
 class DateTime;
 
@@ -35,11 +36,11 @@ class TimerDateTime {
     public:
         uint8_t origin_hour {0};
         uint8_t origin_minute {0};
-        uint8_t origin_second {10};
+        uint8_t origin_second {0};
 
-        uint16_t origin_day {1};
-        uint16_t origin_month {1};
-        uint16_t origin_year {2015};
+        uint16_t origin_day {Default::PrimaryClock::DAY};
+        uint16_t origin_month {Default::PrimaryClock::MONTH};
+        uint16_t origin_year {Default::PrimaryClock::YEAR};
 
         uint8_t hour {0};
         uint8_t minute {0};
@@ -94,7 +95,7 @@ class StopwatchTime {
 
         StopwatchTimeTrigger trigger; // on change
 
-        static const uint8_t STAMPS_COUNT {10};
+        static const uint8_t STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
         Stamp stamps[STAMPS_COUNT];
         uint8_t stamps_index {0};
         uint8_t stamps_index_to_show {0};
@@ -113,15 +114,14 @@ class StopwatchTime {
 
 class DateTime {
     public:
-        uint8_t hour {0};
-        uint8_t minute {0};
-        uint8_t second {0};
-        uint32_t ms {0};
-
-        uint8_t day {01}; // 1 ... 31
-        uint8_t month {01}; // 1 ... 12
-        uint16_t year {2015}; // ... MAX(uint16_t)
-        uint8_t day_of_week {3}; // 0 - sunday, 1 - monday, etc
+        uint8_t hour {Default::PrimaryClock::HOUR};
+        uint8_t minute {Default::PrimaryClock::MINUTE};
+        uint8_t second {Default::PrimaryClock::SECOND};
+        uint32_t ms {Default::PrimaryClock::MS};
+        uint8_t day {Default::PrimaryClock::DAY}; // 1 ... 31
+        uint8_t month {Default::PrimaryClock::MONTH}; // 1 ... 12
+        uint16_t year {Default::PrimaryClock::YEAR}; // ... MAX(uint16_t)
+        uint8_t day_of_week {Default::PrimaryClock::DAY_OF_WEEK}; // 0 - sunday, 1 - monday, etc
 
         DateTimeTrigger trigger; // on date and time change
 

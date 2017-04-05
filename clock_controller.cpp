@@ -437,7 +437,7 @@ void ClockController::sync(){
                     if (dt.stoppped and not dt.on) {
                         dt.on = true;
                         dt.stoppped = false;
-                        dt.launch_countdown();
+                        dt.launch_countdown1();
                     } else
                     if (not dt.stoppped and dt.on) {
                         dt.stoppped = true;
@@ -488,7 +488,7 @@ void ClockController::sync(){
                     if (dt.stoppped and not dt.on) {
                         dt.on = true;
                         dt.stoppped = false;
-                        dt.launch_countdown(_clock.primary_datetime);
+                        dt.launch_countdown2(_clock.primary_datetime);
                     } else
                     if (not dt.stoppped and dt.on) {
                         dt.stoppped = true;

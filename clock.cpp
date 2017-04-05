@@ -185,7 +185,7 @@ void Clock::tick(uint16_t tick_size) {
     secondary_datetime.tick(tick_size);
 
     if (alaram1_datetime.on) {
-        alaram1_datetime.tick(primary_datetime, tick_size);
+        alaram1_datetime.tick1(primary_datetime, tick_size);
 
         if (alaram1_datetime.ringing) {
             alaram1_datetime.ringing = false;
@@ -194,7 +194,7 @@ void Clock::tick(uint16_t tick_size) {
     }
 
     if (alaram2_datetime.on) {
-        alaram2_datetime.tick(primary_datetime, tick_size);
+        alaram2_datetime.tick2(primary_datetime, tick_size);
 
         if (alaram2_datetime.ringing) {
             alaram2_datetime.ringing = false;
@@ -227,7 +227,7 @@ void Clock::tick(uint16_t tick_size) {
     }
 
     if (timer1_datetime.on and !timer1_datetime.stoppped) {
-        timer1_datetime.tick_countdown(tick_size);
+        timer1_datetime.tick_countdown1(tick_size);
 
         if (timer1_datetime.ringing) {
             timer1_datetime.ringing = false;

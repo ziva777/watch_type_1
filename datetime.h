@@ -26,7 +26,8 @@ class AlarmDateTime {
         void move_day_pointer();
         void switch_day();
 
-        void tick(const DateTime &dt, uint16_t tick_size);
+        void tick1(const DateTime &dt, uint16_t tick_size);
+        void tick2(const DateTime &dt, uint16_t tick_size);
         void tick3(const DateTime &dt, uint16_t tick_size);
 
     private:
@@ -63,13 +64,16 @@ class TimerDateTime {
         void dec_origin_month();
         void dec_origin_year();
 
-        void launch_countdown();
-        void launch_countdown(DateTime &dt);
+        void launch_countdown1();
+        void launch_countdown2(DateTime &dt);
         void launch_countdown3(DateTime &dt);
-        void tick_countdown(uint16_t tick_size);
+        void tick_countdown1(uint16_t tick_size);
         void tick_countdown2(const DateTime &dt, uint16_t tick_size);
         void tick_countdown3(const DateTime &dt, uint16_t tick_size);
         void reset_countdown();
+
+        void resolve_febrary_collision();
+        uint8_t days_in_month() const;
 
     private:
         uint8_t *_month_day_count;
@@ -95,14 +99,15 @@ class StopwatchTime {
 
         StopwatchTimeTrigger trigger; // on change
 
+        // Lap counter
         static const uint8_t STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
         Stamp stamps[STAMPS_COUNT];
         uint8_t stamps_index {0};
         uint8_t stamps_index_to_show {0};
 
         void tick(uint16_t tick_size); // tick_size in mS
-        void stamp_it(); // stamp current time in stamp var
-        void free_stamp(); // reset stamp var
+        void stamp_it(); // stamp current time in stamps var
+        void free_stamp(); // reset stamps var
         void reset();
 
     private:
@@ -120,7 +125,7 @@ class DateTime {
         uint32_t ms {Default::PrimaryClock::MS};
         uint8_t day {Default::PrimaryClock::DAY}; // 1 ... 31
         uint8_t month {Default::PrimaryClock::MONTH}; // 1 ... 12
-        uint16_t year {Default::PrimaryClock::YEAR}; // ... MAX(uint16_t)
+        uint16_t year {Default::PrimaryClock::YEAR}; // 0 ... MAX(uint16_t)
         uint8_t day_of_week {Default::PrimaryClock::DAY_OF_WEEK}; // 0 - sunday, 1 - monday, etc
 
         DateTimeTrigger trigger; // on date and time change
@@ -145,7 +150,6 @@ class DateTime {
         void dec_month();
         void dec_year();
 
-        // void normalize();
         void resolve_febrary_collision();
 
     private:

@@ -1,9 +1,29 @@
 #include "datetime.h"
 #include <Arduino.h>
 
-#define CURR_HOUR ((__TIME__[0] - 48) * 10 + (__TIME__[1] - 48))
-#define CURR_MINUTE ((__TIME__[3] - 48) * 10 + (__TIME__[4] - 48))
-#define CURR_SECOND ((__TIME__[6] - 48) * 10 + (__TIME__[7] - 48))
+// #define CURR_HOUR ((__TIME__[0] - 48) * 10 + (__TIME__[1] - 48))
+// #define CURR_MINUTE ((__TIME__[3] - 48) * 10 + (__TIME__[4] - 48))
+// #define CURR_SECOND ((__TIME__[6] - 48) * 10 + (__TIME__[7] - 48))
+
+// template<typename T, int BOUND>
+// inline void DECREMENT(T &v) {
+//     (v ? --v : v=BOUND);
+// }
+// auto minute_decrement = DECREMENT<uint8_t, 59>;
+
+#define DECREMENT(V, BOUND) (V ? --V : V=BOUND)
+#define DECREMENT_1(V, BOUND) (V > 1 ? --V : V=BOUND)
+
+#define DECREMENT_MINUTE(V) DECREMENT(V, 59)
+#define DECREMENT_HOUR(V) DECREMENT(V, 23)
+#define DECREMENT_DAY(V, F) DECREMENT_1(V, F)
+#define DECREMENT_MONTH(V) DECREMENT_1(V, 12)
+
+#define INCREMENT(V, BOUND) (V = ++V % BOUND)
+#define INCREMENT_MINUTE(V) INCREMENT(V, 60)
+#define INCREMENT_HOUR(V) INCREMENT(V, 24)
+#define INCREMENT_DAY(V, F) (V = V % (F) + 1)
+#define INCREMENT_MONTH(V) (V = V % 12 + 1)
 
 static uint8_t MONTH_LENGTH[] = {
     0, // dymmy
@@ -50,30 +70,30 @@ uint16_t day_number(uint16_t d, uint16_t m, uint16_t y) {
 }
 
 void AlarmDateTime::inc_minute() {
-    minute = ++minute % 60;
+    INCREMENT_MINUTE(minute);
 }
 
 void AlarmDateTime::inc_hour() {
-    hour = ++hour % 24;
+    INCREMENT_HOUR(hour);
 }
 
 void AlarmDateTime::dec_minute() {
-    (minute ? --minute : minute=59);
+    DECREMENT_MINUTE(minute);
 }
 
 void AlarmDateTime::dec_hour() {
-    (hour ? --hour : hour=23);
+    DECREMENT_HOUR(hour);
 }
 
 void AlarmDateTime::move_day_pointer() {
-    day_pointer = ++day_pointer % 7 ;
+    INCREMENT(day_pointer, 7);
 }
 
 void AlarmDateTime::switch_day() {
     days[day_pointer] = (days[day_pointer] == 1 ? 0 : 1);
 }
 
-void AlarmDateTime::tick(const DateTime &dt, uint16_t tick_size) {
+void AlarmDateTime::tick1(const DateTime &dt, uint16_t tick_size) {
     if (dt.hour == hour)
         if (dt.minute == minute and no_lock) {
             no_lock = false;
@@ -81,6 +101,10 @@ void AlarmDateTime::tick(const DateTime &dt, uint16_t tick_size) {
         } else {
             no_lock = (dt.minute != minute);
         }
+}
+
+void AlarmDateTime::tick2(const DateTime &dt, uint16_t tick_size) {
+    tick1(dt, tick_size);
 }
 
 void AlarmDateTime::tick3(const DateTime &dt, uint16_t tick_size) {
@@ -95,67 +119,60 @@ void AlarmDateTime::tick3(const DateTime &dt, uint16_t tick_size) {
         }
 }
 
+uint8_t TimerDateTime::days_in_month() const {
+    return _month_day_count[origin_month];
+}
+
 void TimerDateTime::normalize() {
     leap = is_leap(origin_year);
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
 void TimerDateTime::inc_origin_day() {
-    origin_day = origin_day % _month_day_count[origin_month] + 1;
+    INCREMENT_DAY(origin_day, days_in_month());
 }
 
 void TimerDateTime::inc_origin_month() {
-    origin_month = origin_month % 12 + 1;
+    INCREMENT_MONTH(origin_month);
+}
+
+void TimerDateTime::resolve_febrary_collision() {
+    if (leap and origin_month == 2 and origin_day == days_in_month()) {
+        origin_day = 1;
+        ++origin_month;
+    }
 }
 
 void TimerDateTime::inc_origin_year() {
     ++origin_year;
-
-    if (leap and origin_month == 2 and origin_day == _month_day_count[origin_month]) {
-        origin_day = 1;
-        ++origin_month;
-    }
-
-    leap = is_leap(origin_year);
-    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    resolve_febrary_collision();
+    normalize();
 }
 
 void TimerDateTime::dec_origin_day() {
-    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
-    
-    if (origin_day == 1)
-        origin_day = _month_day_count[origin_month];
-    else
-        --origin_day;
+    normalize();
+    DECREMENT_DAY(origin_day, days_in_month());
 }
 
 void TimerDateTime::dec_origin_month() {
-    if (origin_month == 1)
-        origin_month = 12;
-    else
-        --origin_month;
+    normalize();
+    DECREMENT_MONTH(origin_month);
 }
 
 void TimerDateTime::dec_origin_year() {
     --origin_year;
-
-    if (leap and origin_month == 2 and origin_day == _month_day_count[origin_month]) {
-        origin_day = 1;
-        ++origin_month;
-    }
-
-    leap = is_leap(origin_year);
-    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    resolve_febrary_collision();
+    normalize();
 }
 
-void TimerDateTime::launch_countdown() {
+void TimerDateTime::launch_countdown1() {
     hour = origin_hour;
     minute = origin_minute;
     second = origin_second;
     ms = 0;
 }
 
-void TimerDateTime::launch_countdown(DateTime &dt) {
+void TimerDateTime::launch_countdown2(DateTime &dt) {
     ms = 0;
 }
 
@@ -163,7 +180,7 @@ void TimerDateTime::launch_countdown3(DateTime &dt) {
     ms = 0;   
 }
 
-void TimerDateTime::tick_countdown(uint16_t tick_size) {
+void TimerDateTime::tick_countdown1(uint16_t tick_size) {
     ms += tick_size;
 
     if (ms > 1000) {
@@ -313,10 +330,6 @@ void StopwatchTime::reset() {
 DateTime::DateTime() 
     : _month_day_count((_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH))
 {
-    hour = CURR_HOUR;
-    minute = CURR_MINUTE;
-    second = CURR_SECOND + 5;
-
     day_of_week = ::day_of_week(day, month, year);
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
@@ -347,7 +360,7 @@ void DateTime::tick(uint16_t tick_size) {
             hour = 0;
             ++day;
 
-            if (day > _month_day_count[month]) {
+            if (day > days_in_month()) {
                 day = 1;
                 ++month;
 
@@ -388,20 +401,20 @@ void DateTime::inc_second() {
 }
 
 void DateTime::inc_minute() {
-    minute = ++minute % 60;
+    INCREMENT_MINUTE(minute);
 }
 
 void DateTime::inc_hour() {
-    hour = ++hour % 24;
+    INCREMENT_HOUR(hour);
 }
 
 void DateTime::inc_day() {
-    (day < days_in_month() ? ++day : day = 1);
+    INCREMENT_DAY(day, days_in_month());
     day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::inc_month() {
-    (month < 12 ? ++month : month = 1);
+    INCREMENT_MONTH(month);
     day_of_week = ::day_of_week(day, month, year);
 }
 
@@ -417,21 +430,21 @@ void DateTime::dec_second() {
 }
 
 void DateTime::dec_minute() {
-    (minute ? --minute : minute=59);
+    DECREMENT_MINUTE(minute);
 }
 
 void DateTime::dec_hour() {
-    (hour ? --hour : hour=23);
+    DECREMENT_HOUR(hour);
     day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_day() {
-    (day > 1 ? --day : day = days_in_month());
+    DECREMENT_DAY(day, days_in_month());
     day_of_week = ::day_of_week(day, month, year);
 }
 
 void DateTime::dec_month() {
-    (month > 1 ? --month : month = 1);
+    DECREMENT_MONTH(month);
     day_of_week = ::day_of_week(day, month, year);
 }
 
@@ -447,7 +460,7 @@ uint8_t DateTime::days_in_month() const {
 }
 
 void DateTime::resolve_febrary_collision() {
-    if (day > _month_day_count[month]) {
-        day = _month_day_count[month];
+    if (day > days_in_month()) {
+        day = days_in_month();
     }
 }

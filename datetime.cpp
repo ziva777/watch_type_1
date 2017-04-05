@@ -121,6 +121,8 @@ void TimerDateTime::inc_origin_year() {
 }
 
 void TimerDateTime::dec_origin_day() {
+    _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
+    
     if (origin_day == 1)
         origin_day = _month_day_count[origin_month];
     else

@@ -37,9 +37,9 @@ class TimerDateTime {
         uint8_t origin_minute {0};
         uint8_t origin_second {10};
 
-        uint16_t origin_day {0};
-        uint16_t origin_month {0};
-        uint16_t origin_year {0};
+        uint16_t origin_day {1};
+        uint16_t origin_month {1};
+        uint16_t origin_year {2015};
 
         uint8_t hour {0};
         uint8_t minute {0};

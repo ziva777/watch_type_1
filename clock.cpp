@@ -63,7 +63,7 @@ void Clock::begin_substate() {
             break;
 
         case S_TIMER3:
-            _substate_curr = S_TIMER_TYPE2_EDIT_DAYS;
+            _substate_curr = S_TIMER_TYPE2_EDIT_YEARS;
             break;
 
         default:
@@ -144,15 +144,16 @@ void Clock::next_substate() {
 
         case S_TIMER3:
             switch (_substate_curr) {
-                case S_TIMER_TYPE2_EDIT_DAYS:
+                case S_TIMER_TYPE2_EDIT_YEARS:
                     _substate_curr = S_TIMER_TYPE2_EDIT_MONTHS;
                     break;
                 case S_TIMER_TYPE2_EDIT_MONTHS:
-                    _substate_curr = S_TIMER_TYPE2_EDIT_YEARS;
-                    break;
-                case S_TIMER_TYPE2_EDIT_YEARS:
                     _substate_curr = S_TIMER_TYPE2_EDIT_DAYS;
                     break;
+                case S_TIMER_TYPE2_EDIT_DAYS:
+                    _substate_curr = S_TIMER_TYPE2_EDIT_YEARS;
+                    break;
+                
             }
             break;
     }

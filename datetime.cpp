@@ -80,30 +80,38 @@ uint16_t day_number(uint16_t d, uint16_t m, uint16_t y) {
 
 void AlarmDateTime::inc_minute() {
     INCREMENT_MINUTE(minute);
+    trigger.minute_flip();
 }
 
 void AlarmDateTime::inc_hour() {
     INCREMENT_HOUR(hour);
+    trigger.hour_flip();
 }
 
 void AlarmDateTime::dec_minute() {
     DECREMENT_MINUTE(minute);
+    trigger.minute_flip();
 }
 
 void AlarmDateTime::dec_hour() {
     DECREMENT_HOUR(hour);
+    trigger.hour_flip();
 }
 
 void AlarmDateTime::move_day_pointer() {
     INCREMENT(day_pointer, 7);
+    trigger.day_pointer_flip();
 }
 
 void AlarmDateTime::switch_day() {
     days[day_pointer] = (days[day_pointer] == 1 ? 0 : 1);
+    trigger.day_pointer_flip();
 }
 
 void AlarmDateTime::tick1(const DateTime &dt, uint16_t tick_size) {
-    if (dt.hour == hour)
+    trigger.flop();
+
+    if (dt.second == 0 and dt.hour == hour)
         if (dt.minute == minute and no_lock) {
             no_lock = false;
             ringing = true;
@@ -113,12 +121,23 @@ void AlarmDateTime::tick1(const DateTime &dt, uint16_t tick_size) {
 }
 
 void AlarmDateTime::tick2(const DateTime &dt, uint16_t tick_size) {
-    tick1(dt, tick_size);
+    trigger.flop();
+
+    if (dt.second == 0 and dt.hour == hour)
+        if (dt.minute == minute and no_lock) {
+            no_lock = false;
+            ringing = true;
+            trigger.on_flip();
+        } else {
+            no_lock = (dt.minute != minute);
+        }
 }
 
 void AlarmDateTime::tick3(const DateTime &dt, uint16_t tick_size) {
+    trigger.flop();
+
     if (days[dt.day_of_week])
-        if (dt.hour == hour) {   
+        if (dt.second == 0 and dt.hour == hour) {   
             if (dt.minute == minute and no_lock) {
                 no_lock = false;
                 ringing = true;
@@ -189,7 +208,7 @@ void TimerDateTime::dec_second() {
         --total_sec;
     } else {
         total_sec = 99UL * 3600UL + 60UL * 59UL + 59UL;
-    };
+    }
 
     _set_total_origin_sec(total_sec);
 }
@@ -201,7 +220,7 @@ void TimerDateTime::dec_minute() {
         total_sec -= 60UL;
     } else {
         total_sec = 99UL * 3600UL + 60UL * 59UL + origin_second;
-    };
+    }
 
     _set_total_origin_sec(total_sec);
 }
@@ -302,17 +321,27 @@ void TimerDateTime::launch_countdown1() {
     minute = origin_minute;
     second = origin_second;
     ms = 0;
+    trigger.hour_flip();
+    trigger.minute_flip();
+    trigger.second_flip();
 }
 
 void TimerDateTime::launch_countdown2(DateTime &dt) {
     ms = 0;
+    trigger.second_flip();
 }
 
 void TimerDateTime::launch_countdown3(DateTime &dt) {
-    ms = 0;   
+    hour = 0;
+    minute = 0;
+    second = 0;
+    ms = 0; 
+    trigger.second_flip();  
 }
 
 void TimerDateTime::tick_countdown1(uint16_t tick_size) {
+    trigger.flop();
+
     ms += tick_size;
 
     if (ms > 1000) {
@@ -330,10 +359,13 @@ void TimerDateTime::tick_countdown1(uint16_t tick_size) {
         }
 
         _set_total_sec(total_sec);
+        trigger.second_flip();
     }
 }
 
 void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
+    trigger.flop();
+
     uint32_t total_sec_curr = dt.hour * seconds_per::HOUR + dt.minute * seconds_per::MINUTE + dt.second;
     uint32_t total_sec_target = _get_total_origin_sec();
     uint32_t total_sec = (total_sec_curr < total_sec_target ? 
@@ -341,6 +373,7 @@ void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
                 (seconds_per::DAY - total_sec_curr + total_sec_target));
 
     _set_total_sec(total_sec);
+    trigger.second_flip();
 
     if (total_sec == seconds_per::DAY) {
         on = false;
@@ -350,7 +383,11 @@ void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
 }
 
 void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
-    if (origin_year >= dt.year and origin_month >= dt.month and origin_day >= dt.day) {
+    trigger.flop();
+
+    if (origin_year >= dt.year and 
+        origin_month >= dt.month and 
+        origin_day > dt.day) {
         uint16_t total_day = 0;
         uint16_t day_curr = day_number(dt.day, dt.month, dt.year);
         uint16_t day_target = day_number(origin_day, origin_month, origin_year);
@@ -374,6 +411,8 @@ void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
                 stoppped = true;
                 ringing = true;
             }
+
+        trigger.second_flip();
     } else {
         // no sence
         day = 0;
@@ -382,6 +421,7 @@ void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
         second = 0;
         on = false;
         stoppped = true;
+        trigger.second_flip();
     }
 }
 
@@ -463,85 +503,65 @@ DateTime::DateTime()
 
 void DateTime::tick(uint16_t tick_size) {
     trigger.flop();
-    _hour_buff = hour;
-    _minute_buff = minute;
-    _second_buff = second;
-    _day_buff = day;
-    _month_buff = month;
-    _year_buff = year;
 
     ms += tick_size;
-
-    second += ms / 1000;
+    uint8_t tmp = ms / 1000;
     ms %= 1000;
 
-    minute += second / 60;
-    second %= 60;
+    for(uint16_t i = 0; i != tmp; ++i) {
+        inc_second();
 
-    if (minute >= 60) {
-        minute %= 60;
-        ++hour;
+        if (second == 0) {
+            inc_minute();
 
-        if (hour == 24) {
-            hour = 0;
-            ++day;
+            if (minute == 0) {
+                inc_hour();
 
-            if (day > days_in_month()) {
-                day = 1;
-                ++month;
+                if (hour == 0) {
+                    inc_month();
 
-                if (month > 12) {
-                    month = 1;
-                    ++year;
-
-                    _leap = ::is_leap(year);
+                    if (month == 1) {
+                        inc_year();
+                    }
                 }
-                _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
             }
-
-            day_of_week = ::day_of_week(day, month, year);
         }
     }
+}
 
-    if (hour != _hour_buff)
-        trigger.hour_flip();
+void DateTime::align_second_up() {
+    (second < 30 ? second = 30 : second = 0, inc_minute());
+}
 
-    if (minute != _minute_buff)
-        trigger.minute_flip();
-
-    if (second != _second_buff)
-        trigger.second_flip();
-
-    if (day != _day_buff)
-        trigger.day_flip();
-
-    if (month != _month_buff)
-        trigger.month_flip();
-
-    if (year != _year_buff)
-        trigger.year_flip();
+void DateTime::align_second_down() {
+    (second < 30 ? second = 0 : second = 30);
 }
 
 void DateTime::inc_second() {
-    (second < 30 ? second = 30 : second = 60);
+    INCREMENT_SECOND(second);
+    trigger.second_flip();
 }
 
 void DateTime::inc_minute() {
     INCREMENT_MINUTE(minute);
+    trigger.minute_flip();
 }
 
 void DateTime::inc_hour() {
     INCREMENT_HOUR(hour);
+    trigger.hour_flip();
 }
 
 void DateTime::inc_day() {
     INCREMENT_DAY(day, days_in_month());
     day_of_week = ::day_of_week(day, month, year);
+    trigger.day_flip();
 }
 
 void DateTime::inc_month() {
     INCREMENT_MONTH(month);
     day_of_week = ::day_of_week(day, month, year);
+    trigger.month_flip();
 }
 
 void DateTime::inc_year() {
@@ -549,29 +569,35 @@ void DateTime::inc_year() {
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
     day_of_week = ::day_of_week(day, month, year);
+    trigger.year_flip();
 }
 
 void DateTime::dec_second() {
-    (second < 30 ? second = 0 : second = 30);
+    DECREMENT_SECOND(second);
+    trigger.second_flip();
 }
 
 void DateTime::dec_minute() {
     DECREMENT_MINUTE(minute);
+    trigger.minute_flip();
 }
 
 void DateTime::dec_hour() {
     DECREMENT_HOUR(hour);
     day_of_week = ::day_of_week(day, month, year);
+    trigger.hour_flip();
 }
 
 void DateTime::dec_day() {
     DECREMENT_DAY(day, days_in_month());
     day_of_week = ::day_of_week(day, month, year);
+    trigger.day_flip();
 }
 
 void DateTime::dec_month() {
     DECREMENT_MONTH(month);
     day_of_week = ::day_of_week(day, month, year);
+    trigger.month_flip();
 }
 
 void DateTime::dec_year() {
@@ -579,6 +605,7 @@ void DateTime::dec_year() {
     _leap = ::is_leap(year);
     _month_day_count = (_leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
     day_of_week = ::day_of_week(day, month, year);
+    trigger.year_flip();
 }
 
 uint8_t DateTime::days_in_month() const {

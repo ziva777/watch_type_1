@@ -5,7 +5,48 @@
 #include "datetime_trigger.h"
 #include "settings.h"
 
-class DateTime;
+class DateTime {
+    public:
+        uint8_t hour {Default::PrimaryClock::HOUR};
+        uint8_t minute {Default::PrimaryClock::MINUTE};
+        uint8_t second {Default::PrimaryClock::SECOND};
+        uint32_t ms {Default::PrimaryClock::MS};
+        uint8_t day {Default::PrimaryClock::DAY}; // 1 ... 31
+        uint8_t month {Default::PrimaryClock::MONTH}; // 1 ... 12
+        uint16_t year {Default::PrimaryClock::YEAR}; // 0 ... MAX(uint16_t)
+        uint8_t day_of_week {Default::PrimaryClock::DAY_OF_WEEK}; // 0 - sunday, 1 - monday, etc
+
+        DateTimeTrigger trigger; // on date and time change
+
+        DateTime();
+
+        void tick(uint16_t  tick_size); // tick_size in mS
+        uint8_t days_in_month() const;
+        bool leap() const { return _leap; };
+
+        void align_second_up();
+        void align_second_down();
+
+        void inc_second();
+        void inc_minute();
+        void inc_hour();
+        void inc_day();
+        void inc_month();
+        void inc_year();
+
+        void dec_second();
+        void dec_minute();
+        void dec_hour();
+        void dec_day();
+        void dec_month();
+        void dec_year();
+
+        void resolve_febrary_collision();
+
+    private:
+        bool _leap {false};
+        uint8_t *_month_day_count;
+};
 
 class AlarmDateTime {
     public:
@@ -13,6 +54,8 @@ class AlarmDateTime {
         uint8_t minute {0};
         uint8_t days[7] {0, 1, 1, 1, 1, 1, 0}; // 0 - sunday, 1 - monday, etc
         uint8_t day_pointer {1}; // 1 - monday
+
+        AlarmDateTimeTrigger trigger;
 
         bool on {false};
         bool no_lock {true};
@@ -48,6 +91,8 @@ class TimerDateTime {
         uint8_t second {0};
         uint32_t ms {0};
         uint16_t day {0};
+
+        TimerDateTimeTrigger trigger;
 
         bool on {false};
         bool stoppped {true};
@@ -136,53 +181,6 @@ class StopwatchTime {
         uint8_t _minute_buff {0};
         uint8_t _second_buff {0};
         uint32_t _ms_buff {0};
-};
-
-class DateTime {
-    public:
-        uint8_t hour {Default::PrimaryClock::HOUR};
-        uint8_t minute {Default::PrimaryClock::MINUTE};
-        uint8_t second {Default::PrimaryClock::SECOND};
-        uint32_t ms {Default::PrimaryClock::MS};
-        uint8_t day {Default::PrimaryClock::DAY}; // 1 ... 31
-        uint8_t month {Default::PrimaryClock::MONTH}; // 1 ... 12
-        uint16_t year {Default::PrimaryClock::YEAR}; // 0 ... MAX(uint16_t)
-        uint8_t day_of_week {Default::PrimaryClock::DAY_OF_WEEK}; // 0 - sunday, 1 - monday, etc
-
-        DateTimeTrigger trigger; // on date and time change
-
-        DateTime();
-
-        void tick(uint16_t  tick_size); // tick_size in mS
-        uint8_t days_in_month() const;
-        bool leap() const { return _leap; };
-
-        void inc_second();
-        void inc_minute();
-        void inc_hour();
-        void inc_day();
-        void inc_month();
-        void inc_year();
-
-        void dec_second();
-        void dec_minute();
-        void dec_hour();
-        void dec_day();
-        void dec_month();
-        void dec_year();
-
-        void resolve_febrary_collision();
-
-    private:
-        bool _leap {false};
-        uint8_t *_month_day_count;
-
-        uint8_t _hour_buff {0};
-        uint8_t _minute_buff {0};
-        uint8_t _second_buff {0};
-        uint8_t _day_buff {0};
-        uint8_t _month_buff {0};
-        uint16_t _year_buff {0};
 };
 
 #endif // _DATETIME_H_

@@ -7,7 +7,7 @@ ClockController::ClockController(Clock &c, Display &d)
 
 }
 
-void ClockController::setup(){
+void ClockController::setup() {
     _display.setup(Pin::CONTRAST, Pin::BRIGHTNESS);
     _display.set_contrast(Default::CONTRAST);
     _display.set_brightness(Default::BRIGHTNESS);
@@ -17,7 +17,7 @@ void ClockController::setup(){
 
 void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        dt.inc_second();
+        dt.align_second_up();
     else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.inc_minute();
     else if (state == Clock::S_CLOCK_EDIT_HOURS)
@@ -34,7 +34,7 @@ void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) 
 
 void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        dt.dec_second();
+        dt.align_second_down();
     else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.dec_minute();
     else if (state == Clock::S_CLOCK_EDIT_HOURS)
@@ -146,45 +146,57 @@ void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, Da
 }
 
 void ClockController::_handle_alarm_type1_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_alarm_type1(dt);
-    else
+    if (substate == Clock::S_NONE){
+        if (dt.trigger.triggered())
+            _display.print_alarm_type1(dt);
+    } else {
         _display.print_edit_alarm_type1(dt, substate);
+    }
 }
 
 void ClockController::_handle_alarm_type2_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_alarm_type2(dt);
-    else
+    if (substate == Clock::S_NONE) {
+        if (dt.trigger.triggered())
+            _display.print_alarm_type2(dt);
+    } else {
         _display.print_edit_alarm_type2(dt, substate);
+    }
 }
 
 void ClockController::_handle_alarm_type3_substate(Clock::CLOCK_SUBSTATES substate, AlarmDateTime &dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_alarm_type3(dt);
-    else
+    if (substate == Clock::S_NONE) {
+        if (dt.trigger.triggered())
+            _display.print_alarm_type3(dt);
+    } else {
         _display.print_edit_alarm_type3(dt, substate);
+    }
 }
 
 void ClockController::_handle_timer_type1_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_timer_type1(dt);
-    else
+    if (substate == Clock::S_NONE) {
+        if (dt.trigger.triggered())
+            _display.print_timer_type1(dt);
+    } else {
         _display.print_edit_timer_type1(dt, substate);   
+    }
 }
 
 void ClockController::_handle_timer_type2_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_timer_type2(dt);
-    else
+    if (substate == Clock::S_NONE) {
+        if (dt.trigger.triggered())
+            _display.print_timer_type2(dt);
+    } else {
         _display.print_edit_timer_type2(dt, substate);   
+    }
 }
 
 void ClockController::_handle_timer_type3_substate(Clock::CLOCK_SUBSTATES substate, TimerDateTime &dt, DateTime &curr_dt) {
-    if (substate == Clock::S_NONE)
-        _display.print_timer_type3(dt);
-    else
+    if (substate == Clock::S_NONE) {
+        if (dt.trigger.triggered())
+            _display.print_timer_type3(dt);
+    } else {
         _display.print_edit_timer_type3(dt, substate);   
+    }
 }
 
 void ClockController::_handle_stopwatch(StopwatchTime &stopwatch) {
@@ -264,6 +276,13 @@ void ClockController::sync(){
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
+
+                    if (state == Clock::S_ALARM1)
+                        _display.print_alarm_type1(dt);
+                    else if (state == Clock::S_ALARM2)
+                        _display.print_alarm_type2(dt);
+                    else if (state == Clock::S_ALARM3)
+                        _display.print_alarm_type3(dt);
                 }
 
                 if (_button3.pressed() or _button3.pressed_repeat())
@@ -324,6 +343,7 @@ void ClockController::sync(){
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
+                    _display.print_timer_type1(dt);
                 }
 
                 if (_button3.pressed() or _button3.pressed_repeat())
@@ -375,6 +395,7 @@ void ClockController::sync(){
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
+                    _display.print_timer_type2(dt);
                 }
 
                 if (_button3.pressed() or _button3.pressed_repeat())
@@ -426,6 +447,7 @@ void ClockController::sync(){
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
+                    _display.print_timer_type3(dt);
                 }
 
                 if (_button3.pressed() or _button3.pressed_repeat())
@@ -484,9 +506,8 @@ void ClockController::sync(){
 
     switch (state) {
         case Clock::S_CLOCK1: {
-            if (_clock.state_changed()) {
+            if (_clock.state_changed())
                 _display.print_clock_datetime(_clock.primary_datetime);
-            }
             else
                 _handle_clock_substate(substate, _clock.primary_datetime);
             break;
@@ -562,7 +583,7 @@ void ClockController::sync(){
 }
 
 void ClockController::timer1_sync() {
-    // TODO: надо синхронизировать секундомер и таймер1 всегда
+    // TODO: надо синхронизировать секундомер и таймер1 всегда,
     // но не синхронизировать если в режиме редактирования
     // нажата кнопка коррекции секунд.
     _clock.tick(Default::TICK_SIZE);

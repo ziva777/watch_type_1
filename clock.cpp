@@ -36,6 +36,8 @@ void Clock::next_state() {
             _state_curr = S_CLOCK1;
             break;
     }
+
+    _state_change_trigger = _state_prev != _state_curr;
 }
 
 void Clock::begin_substate() {
@@ -78,7 +80,7 @@ void Clock::next_substate() {
 
     switch (s) {
         case S_CLOCK1:
-        case S_CLOCK2:
+        case S_CLOCK2: {
             switch (_substate_curr) {
                 case S_CLOCK_EDIT_SECONDS:
                     _substate_curr = S_CLOCK_EDIT_MINUTES;
@@ -100,9 +102,10 @@ void Clock::next_substate() {
                     break;
             }
             break;
+        }
 
         case S_ALARM1:
-        case S_ALARM2:
+        case S_ALARM2: {
             switch (_substate_curr) {
                 case S_ALARM_TYPE1_EDIT_MINUTES:
                     _substate_curr = S_ALARM_TYPE1_EDIT_HOURS;
@@ -112,8 +115,9 @@ void Clock::next_substate() {
                     break;
             }
             break;
+        }
 
-        case S_ALARM3:
+        case S_ALARM3: {
             switch (_substate_curr) {
                 case S_ALARM_TYPE2_EDIT_MINUTES:
                     _substate_curr = S_ALARM_TYPE2_EDIT_HOURS;
@@ -126,9 +130,10 @@ void Clock::next_substate() {
                     break;
             }
             break;
+        }
 
         case S_TIMER1:
-        case S_TIMER2:
+        case S_TIMER2: {
             switch (_substate_curr) {
                 case S_TIMER_TYPE1_EDIT_SECONDS:
                     _substate_curr = S_TIMER_TYPE1_EDIT_MINUTES;
@@ -141,8 +146,9 @@ void Clock::next_substate() {
                     break;
             }
             break;
+        }
 
-        case S_TIMER3:
+        case S_TIMER3: {
             switch (_substate_curr) {
                 case S_TIMER_TYPE2_EDIT_YEARS:
                     _substate_curr = S_TIMER_TYPE2_EDIT_MONTHS;
@@ -156,6 +162,7 @@ void Clock::next_substate() {
                 
             }
             break;
+        }
     }
 }
 
@@ -178,6 +185,14 @@ Clock::CLOCK_SUBSTATES Clock::substate() const {
 
 Clock::CLOCK_SUBSTATES Clock::substate_prev() const {
     return _substate_prev;
+}
+
+bool Clock::state_changed() const {
+    return _state_change_trigger;
+}
+
+void Clock::flop_state_changed() {
+    _state_change_trigger = false;
 }
 
 void Clock::tick(uint16_t tick_size) {
@@ -231,6 +246,8 @@ void Clock::tick(uint16_t tick_size) {
 
         if (timer1_datetime.ringing) {
             timer1_datetime.ringing = false;
+            // timer1_datetime.stoppped = true;
+            // timer1_datetime.ringing = false;
             tone(6, 440 * 5, 100);
         }
     }

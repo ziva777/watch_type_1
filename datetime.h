@@ -121,8 +121,8 @@ class StopwatchTime {
         StopwatchTimeTrigger trigger; // on change
 
         // Lap counter
-        static const uint8_t STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
-        Stamp stamps[STAMPS_COUNT];
+        const uint8_t STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
+        Stamp stamps[Default::STOPWATCH_LAP_COUNT];
         uint8_t stamps_index {0};
         uint8_t stamps_index_to_show {0};
 

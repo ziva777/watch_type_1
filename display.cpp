@@ -1,7 +1,7 @@
 #include "display.h"
 #include "settings.h"
 
-static char *DAY_NAME[7] = {
+const char *DAY_NAME[7] = {
     "Su",
     "Mo",
     "Tu",

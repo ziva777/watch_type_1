@@ -52,6 +52,9 @@ namespace Default {
 
     // Max length of stopwatch lap list
     const uint8_t STOPWATCH_LAP_COUNT = 10;
+
+    // Max year from now ~ 1094 days
+    const uint8_t TIMER3_MAX_FUTURE_YEAR_OFFSET = 2;
 };
 
 #endif // _SETTINGS_H_

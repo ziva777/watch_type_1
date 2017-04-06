@@ -119,7 +119,7 @@ void ClockController::_inc_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
     else if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
         dt.inc_origin_month();
     else if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
-        dt.inc_origin_year(curr_dt.year, 2);
+        dt.inc_origin_year(curr_dt.year, Default::TIMER3_MAX_FUTURE_YEAR_OFFSET);
 }
 
 void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state, DateTime &curr_dt) {
@@ -127,12 +127,10 @@ void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
 
     if (state == Clock::S_TIMER_TYPE2_EDIT_DAYS)
         dt.dec_origin_day();
-    else
-    if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
+    else if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
         dt.dec_origin_month();
-    else
-    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
-        dt.dec_origin_year(curr_dt.year, 2);
+    else if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
+        dt.dec_origin_year(curr_dt.year, Default::TIMER3_MAX_FUTURE_YEAR_OFFSET);
 }
 
 void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, DateTime &dt) {
@@ -195,10 +193,6 @@ void ClockController::_handle_stopwatch(StopwatchTime &stopwatch) {
 }
 
 void ClockController::sync(){
-    static Clock::CLOCK_STATES clock_state_curr = _clock.state();
-    static Clock::CLOCK_STATES clock_state_prev = _clock.state();
-    bool state_cnanged;
-
     _button1.update();
     _button2.update();
     _button3.update();
@@ -206,9 +200,6 @@ void ClockController::sync(){
 
     Clock::CLOCK_STATES state = _clock.state();
     Clock::CLOCK_SUBSTATES substate = _clock.substate();
-
-    clock_state_curr = state;
-    state_cnanged = clock_state_prev != clock_state_curr;
 
     switch (state) {
         case Clock::S_CLOCK1:
@@ -446,6 +437,10 @@ void ClockController::sync(){
             break;
         }
         case Clock::S_STOPWATCH: {
+            if (_button1.pressed()) {
+                _clock.next_state();
+                _display.print_clock_state(_clock);
+            } else
             if (_button2.pressed()) {
                 if (_clock.stopwatch.on) {
                     _clock.stopwatch.stoppped = !_clock.stopwatch.stoppped;
@@ -477,61 +472,88 @@ void ClockController::sync(){
                         ++_clock.stopwatch.stamps_index_to_show;
                 }
             }
-        }
-        default:
-            if (substate == Clock::S_NONE)
-                if (_button1.pressed()) {
-                    _clock.next_state();
-                    _display.print_clock_state(_clock);
-                }
             break;
+        }
     }
 
-    switch (_clock.state()) {
+    // TODO: нужно разобраться с перерисовкой экрана
+    // при переключении состояний контроллера
+
+    state = _clock.state();
+    substate = _clock.substate();
+
+    switch (state) {
         case Clock::S_CLOCK1: {
-                if (state_cnanged)
-                    _display.print_clock_datetime(_clock.primary_datetime);
-                else
-                    _handle_clock_substate(substate, _clock.primary_datetime);
+            if (_clock.state_changed()) {
+                _display.print_clock_datetime(_clock.primary_datetime);
             }
+            else
+                _handle_clock_substate(substate, _clock.primary_datetime);
             break;
+        }
         case Clock::S_CLOCK2: {
-                if (state_cnanged)
-                    _display.print_clock_datetime(_clock.secondary_datetime);
-                else
-                    _handle_clock_substate(substate, _clock.secondary_datetime);
-            }
+            if (_clock.state_changed())
+                _display.print_clock_datetime(_clock.secondary_datetime);
+            else
+                _handle_clock_substate(substate, _clock.secondary_datetime);
             break;
-        case Clock::S_ALARM1:
-            _handle_alarm_type1_substate(substate, _clock.alaram1_datetime);
+        }
+        case Clock::S_ALARM1: {
+            if (_clock.state_changed())
+                _display.print_alarm_type1(_clock.alaram1_datetime);
+            else
+                _handle_alarm_type1_substate(substate, _clock.alaram1_datetime);
             break;
-        case Clock::S_ALARM2:
-            _handle_alarm_type2_substate(substate, _clock.alaram2_datetime);
+        }
+        case Clock::S_ALARM2: {
+            if (_clock.state_changed())
+                _display.print_alarm_type2(_clock.alaram2_datetime);
+            else
+                _handle_alarm_type2_substate(substate, _clock.alaram2_datetime);
             break;
-        case Clock::S_ALARM3:
-            _handle_alarm_type3_substate(substate, _clock.alaram3_datetime);
+        }
+        case Clock::S_ALARM3: {
+            if (_clock.state_changed())
+                _display.print_alarm_type3(_clock.alaram3_datetime);
+            else
+                _handle_alarm_type3_substate(substate, _clock.alaram3_datetime);
             break;
-        case Clock::S_SIGNAL:
+        }
+        case Clock::S_SIGNAL: {
             _display.print_signal(_clock.hour_signal);
             break;
-        case Clock::S_TIMER1:
-            _handle_timer_type1_substate(substate, _clock.timer1_datetime);
+        }
+        case Clock::S_TIMER1: {
+            if (_clock.state_changed())
+                _display.print_timer_type1(_clock.timer1_datetime);
+            else
+                _handle_timer_type1_substate(substate, _clock.timer1_datetime);
             break;
-        case Clock::S_TIMER2:
-            _handle_timer_type2_substate(substate, _clock.timer2_datetime);
+        }
+        case Clock::S_TIMER2: {
+            if (_clock.state_changed())
+                _display.print_timer_type2(_clock.timer2_datetime);
+            else
+                _handle_timer_type2_substate(substate, _clock.timer2_datetime);
             break;
-        case Clock::S_TIMER3:
-            _handle_timer_type3_substate(substate, _clock.timer3_datetime, _clock.primary_datetime);
+        }
+        case Clock::S_TIMER3: {
+            if (_clock.state_changed())
+                _display.print_timer_type3(_clock.timer3_datetime);
+            else
+                _handle_timer_type3_substate(substate, _clock.timer3_datetime, _clock.primary_datetime);
             break;
+        }
         case Clock::S_STOPWATCH: {
-                if ((clock_state_prev != clock_state_curr))
-                    _display.print_stopwatch(_clock.stopwatch);
+            if (_clock.state_changed())
+                _display.print_stopwatch(_clock.stopwatch);
+            else
                 _handle_stopwatch(_clock.stopwatch);
-                break;
-            }
+            break;
+        }
     }
 
-    clock_state_prev = clock_state_curr;
+    _clock.flop_state_changed();
 
     _button1.flop();
     _button2.flop();
@@ -540,18 +562,21 @@ void ClockController::sync(){
 }
 
 void ClockController::timer1_sync() {
+    // TODO: надо синхронизировать секундомер и таймер1 всегда
+    // но не синхронизировать если в режиме редактирования
+    // нажата кнопка коррекции секунд.
     _clock.tick(Default::TICK_SIZE);
 }
 
 void ClockController::timer2_sync() {
-    static uint16_t counter = 0;
-    static uint16_t brightness = 0;
+    // static uint16_t counter = 0;
+    // static uint16_t brightness = 0;
 
-    if (counter % 100 == 0) {
-        _display.set_brightness(brightness);
-        ++brightness;
-        brightness %= 255;
-    }
+    // if (counter % 100 == 0) {
+    //     _display.set_brightness(brightness);
+    //     ++brightness;
+    //     brightness %= 255;
+    // }
 
-    ++counter;
+    // ++counter;
 }

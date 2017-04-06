@@ -35,10 +35,8 @@ void Button::update() {
         if (_repeat_time_curr != _repeat_time_prev) {
             _repeat_time_prev = _repeat_time_curr;
             _state = BUTTON_REPEAT;
-            
         }
-    }
-    else {
+    } else {
         _state = BUTTON_FREE;
     }
 }
@@ -56,13 +54,14 @@ bool Button::pressed() const {
 void Button::flop() {
     _button_state_prev = _button_state_curr;
 
-    if (_button_state_curr == LOW)
+    if (_button_state_curr == LOW) {   
         if (_state == BUTTON_PRESSED)
             _state = BUTTON_WAIT_FOR_PRESSED_HARD;
         else if (_state == BUTTON_PRESSED_HARD)
             _state = BUTTON_WAIT_FOR_REPEAT;
         else if (_state == BUTTON_REPEAT)
             _state = BUTTON_WAIT_FOR_REPEAT;
+    }
 }
 
 bool Button::is_down() const {

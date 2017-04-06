@@ -72,6 +72,8 @@ class Clock {
         void next_state();
         Clock::CLOCK_STATES state() const;
         Clock::CLOCK_STATES state_prev() const;
+        bool state_changed() const;
+        void flop_state_changed();
 
         void begin_substate();
         void next_substate();
@@ -85,6 +87,8 @@ class Clock {
 
         Clock::CLOCK_SUBSTATES _substate_curr{S_NONE};
         Clock::CLOCK_SUBSTATES _substate_prev{S_NONE};
+
+        bool _state_change_trigger {false};
 };
 
 #endif // _CLOCK_H_

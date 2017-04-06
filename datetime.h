@@ -56,13 +56,29 @@ class TimerDateTime {
 
         void normalize();
 
+        void inc_second();
+        void inc_minute();
+        void inc_hour();
+
+        void dec_second();
+        void dec_minute();
+        void dec_hour();
+
+        void inc_origin_second();
+        void inc_origin_minute();
+        void inc_origin_hour();
         void inc_origin_day();
         void inc_origin_month();
         void inc_origin_year();
+        void inc_origin_year(uint16_t year_curr, uint8_t year_max_offset);
 
+        void dec_origin_second();
+        void dec_origin_minute();
+        void dec_origin_hour();
         void dec_origin_day();
         void dec_origin_month();
         void dec_origin_year();
+        void dec_origin_year(uint16_t year_curr, uint8_t year_max_offset);
 
         void launch_countdown1();
         void launch_countdown2(DateTime &dt);
@@ -77,6 +93,11 @@ class TimerDateTime {
 
     private:
         uint8_t *_month_day_count;
+
+        uint32_t _get_total_origin_sec() const;
+        void _set_total_origin_sec(uint32_t total_sec);
+        uint32_t _get_total_sec() const;
+        void _set_total_sec(uint32_t total_sec);
 };
 
 class StopwatchTime {

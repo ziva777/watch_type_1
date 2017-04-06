@@ -121,6 +121,17 @@ namespace DIGIT {
         0b11111,
         0b11111
     };
+
+    char TEN[8] = {
+        0b00000,
+        0b00000,
+        0b10111,
+        0b10101,
+        0b10101,
+        0b10101,
+        0b10111,
+        0b00000
+    };
 };
 
 Display::Display() 
@@ -136,6 +147,8 @@ void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
 
     pinMode(_contrast_pin, OUTPUT);
     pinMode(_brightness_pin, OUTPUT);
+
+    _load_digit(10, 0);
 
     _lcd.begin(16, 2);
 }
@@ -213,6 +226,9 @@ void Display::_load_digit(uint8_t d, uint8_t p) {
             break;
         case 9:
             c = DIGIT::NINE;
+            break;
+        case 10:
+            c = DIGIT::TEN;
             break;
     }
     _lcd.createChar(p, c);
@@ -326,12 +342,25 @@ void Display::print_timer_type3(const TimerDateTime &dt) {
     print_text(0, 4, buff);
 
     memset(buff, 0, 16);
-    sprintf(buff, "%3u %2u:%02u:%02u", 
-                  dt.day,
-                  dt.hour,
-                  dt.minute,
-                  dt.second);
-    print_text(1, 0, buff);
+
+    if (dt.day < 1000) {
+        sprintf(buff, "%3u %2u:%02u:%02u", 
+                      dt.day,
+                      dt.hour,
+                      dt.minute,
+                      dt.second);
+        print_text(1, 0, buff);
+    } else {
+        uint8_t c = 0;
+        _lcd.setCursor(0, 1);
+        _lcd.write(c);
+        sprintf(buff, "%2u %2u:%02u:%02u", 
+                      dt.day % 100,
+                      dt.hour,
+                      dt.minute,
+                      dt.second);
+        print_text(2, 1, buff);
+    }
 }
 
 void Display::print_stopwatch(const StopwatchTime &t) {

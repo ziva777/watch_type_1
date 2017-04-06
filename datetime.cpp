@@ -10,16 +10,18 @@
 //     (v ? --v : v=BOUND);
 // }
 // auto minute_decrement = DECREMENT<uint8_t, 59>;
-
+// or ... my weakness
 #define DECREMENT(V, BOUND) (V ? --V : V=BOUND)
 #define DECREMENT_1(V, BOUND) (V > 1 ? --V : V=BOUND)
 
+#define DECREMENT_SECOND(V) DECREMENT(V, 59)
 #define DECREMENT_MINUTE(V) DECREMENT(V, 59)
 #define DECREMENT_HOUR(V) DECREMENT(V, 23)
 #define DECREMENT_DAY(V, F) DECREMENT_1(V, F)
 #define DECREMENT_MONTH(V) DECREMENT_1(V, 12)
 
 #define INCREMENT(V, BOUND) (V = ++V % BOUND)
+#define INCREMENT_SECOND(V) INCREMENT(V, 60)
 #define INCREMENT_MINUTE(V) INCREMENT(V, 60)
 #define INCREMENT_HOUR(V) INCREMENT(V, 24)
 #define INCREMENT_DAY(V, F) (V = V % (F) + 1)
@@ -55,6 +57,13 @@ static uint8_t MONTH_LENGTH_LEAP[] = {
     31, // 10  October   31 days
     30, // 11  November  30 days
     31  // 12  December  31 days
+};
+
+// Seconds consts
+namespace seconds_per {
+    static uint32_t MINUTE = 60UL;
+    static uint32_t HOUR = 3600UL;
+    static uint32_t DAY = 86400UL;
 };
 
 bool is_leap(uint16_t y) {
@@ -128,6 +137,79 @@ void TimerDateTime::normalize() {
     _month_day_count = (leap ? MONTH_LENGTH_LEAP : MONTH_LENGTH);
 }
 
+void TimerDateTime::inc_second() {
+    if (++origin_second == 60) {
+        origin_second = 0;
+        inc_minute();
+    }
+}
+
+void TimerDateTime::inc_minute() {
+    if (++origin_minute == 60) {
+        origin_minute = 0;
+        inc_hour();
+    }
+}
+
+void TimerDateTime::inc_hour() {
+    INCREMENT(origin_hour, 100);
+}
+
+uint32_t TimerDateTime::_get_total_origin_sec() const {
+    uint32_t total_sec = origin_hour * seconds_per::HOUR + 
+                            origin_minute * seconds_per::MINUTE + 
+                              origin_second;
+    return total_sec;
+}
+
+void TimerDateTime::_set_total_origin_sec(uint32_t total_sec) {
+    origin_hour = total_sec / seconds_per::HOUR;
+    origin_minute = (total_sec - origin_hour * seconds_per::HOUR) / seconds_per::MINUTE;
+    origin_second = total_sec - origin_hour * seconds_per::HOUR 
+                        - origin_minute * seconds_per::MINUTE;
+}
+
+uint32_t TimerDateTime::_get_total_sec() const {
+    uint32_t total_sec = hour * seconds_per::HOUR + 
+                            minute * seconds_per::MINUTE + 
+                              second;
+    return total_sec;
+}
+
+void TimerDateTime::_set_total_sec(uint32_t total_sec) {
+    hour = total_sec / seconds_per::HOUR;
+    minute = (total_sec - hour * seconds_per::HOUR) / seconds_per::MINUTE;
+    second = total_sec - hour * seconds_per::HOUR - minute * seconds_per::MINUTE;
+}
+
+void TimerDateTime::dec_second() {
+    uint32_t total_sec = _get_total_origin_sec();
+
+    if (total_sec) {
+        --total_sec;
+    } else {
+        total_sec = 99UL * 3600UL + 60UL * 59UL + 59UL;
+    };
+
+    _set_total_origin_sec(total_sec);
+}
+
+void TimerDateTime::dec_minute() {
+    uint32_t total_sec = _get_total_origin_sec();
+
+    if (total_sec >= 60UL) {
+        total_sec -= 60UL;
+    } else {
+        total_sec = 99UL * 3600UL + 60UL * 59UL + origin_second;
+    };
+
+    _set_total_origin_sec(total_sec);
+}
+
+void TimerDateTime::dec_hour() {
+    DECREMENT(origin_hour, 99);
+}
+
 void TimerDateTime::inc_origin_day() {
     INCREMENT_DAY(origin_day, days_in_month());
 }
@@ -149,6 +231,49 @@ void TimerDateTime::inc_origin_year() {
     normalize();
 }
 
+void TimerDateTime::inc_origin_year(uint16_t year_curr, uint8_t year_max_offset) {
+    (origin_year < year_curr + year_max_offset ? 
+            ++origin_year : origin_year -= year_max_offset);
+    resolve_febrary_collision();
+    normalize();
+}
+
+void TimerDateTime::inc_origin_second() {
+    INCREMENT_SECOND(origin_second);
+
+    if (origin_second == 0)
+        inc_origin_minute();
+}
+
+void TimerDateTime::inc_origin_minute() {
+    INCREMENT_MINUTE(origin_minute);
+
+    if (origin_minute == 0)
+        inc_origin_hour();
+}
+
+void TimerDateTime::inc_origin_hour() {
+    INCREMENT_HOUR(origin_hour);
+}
+
+void TimerDateTime::dec_origin_second() {
+    DECREMENT_SECOND(origin_second);
+
+    if (origin_second == 59) // after dec become 59
+        dec_origin_minute();
+}
+
+void TimerDateTime::dec_origin_minute() {
+    DECREMENT_MINUTE(origin_minute);
+
+    if (origin_minute == 59) // after dec become 59
+        DECREMENT_HOUR(origin_hour);
+}
+
+void TimerDateTime::dec_origin_hour() {
+    DECREMENT_HOUR(origin_hour);
+}
+
 void TimerDateTime::dec_origin_day() {
     normalize();
     DECREMENT_DAY(origin_day, days_in_month());
@@ -161,6 +286,13 @@ void TimerDateTime::dec_origin_month() {
 
 void TimerDateTime::dec_origin_year() {
     --origin_year;
+    resolve_febrary_collision();
+    normalize();
+}
+
+void TimerDateTime::dec_origin_year(uint16_t year_curr, uint8_t year_max_offset) {
+    (origin_year > year_curr ? 
+            --origin_year : origin_year += year_max_offset);
     resolve_febrary_collision();
     normalize();
 }
@@ -186,9 +318,7 @@ void TimerDateTime::tick_countdown1(uint16_t tick_size) {
     if (ms > 1000) {
         ms %= 1000;
         
-        uint32_t total_sec = hour * 3600UL + 
-                                minute * 60UL + 
-                                  second;
+        uint32_t total_sec = _get_total_sec();
 
         if (total_sec > 1)
             --total_sec;
@@ -199,24 +329,20 @@ void TimerDateTime::tick_countdown1(uint16_t tick_size) {
             ringing = true;
         }
 
-        hour = total_sec / 3600UL;
-        minute = (total_sec - hour * 3600UL) / 60UL;
-        second = total_sec - hour * 3600UL - minute * 60UL;
+        _set_total_sec(total_sec);
     }
 }
 
 void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
-    uint32_t total_sec_curr = dt.hour * 3600UL + dt.minute * 60UL + dt.second;
-    uint32_t total_sec_target = origin_hour * 3600UL + origin_minute * 60UL + origin_second;
+    uint32_t total_sec_curr = dt.hour * seconds_per::HOUR + dt.minute * seconds_per::MINUTE + dt.second;
+    uint32_t total_sec_target = _get_total_origin_sec();
     uint32_t total_sec = (total_sec_curr < total_sec_target ? 
                 (total_sec_target - total_sec_curr) : 
-                (86400UL - total_sec_curr + total_sec_target));
+                (seconds_per::DAY - total_sec_curr + total_sec_target));
 
-    hour = total_sec / 3600UL;
-    minute = (total_sec - hour * 3600UL) / 60UL;
-    second = total_sec - hour * 3600UL - minute * 60UL;
+    _set_total_sec(total_sec);
 
-    if (total_sec == 86400UL) {
+    if (total_sec == seconds_per::DAY) {
         on = false;
         stoppped = true;
         ringing = true;

@@ -18,20 +18,15 @@ void ClockController::setup(){
 void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
         dt.inc_second();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_MINUTES)
+    else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.inc_minute();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_HOURS)
+    else if (state == Clock::S_CLOCK_EDIT_HOURS)
         dt.inc_hour();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_DAYS)
+    else if (state == Clock::S_CLOCK_EDIT_DAYS)
         dt.inc_day();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_MONTHS)
+    else if (state == Clock::S_CLOCK_EDIT_MONTHS)
         dt.inc_month();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_YEARS)
+    else if (state == Clock::S_CLOCK_EDIT_YEARS)
         dt.inc_year();
 
     dt.resolve_febrary_collision();
@@ -40,193 +35,80 @@ void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) 
 void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
     if (state == Clock::S_CLOCK_EDIT_SECONDS)
         dt.dec_second();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_MINUTES)
+    else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.dec_minute();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_HOURS)
+    else if (state == Clock::S_CLOCK_EDIT_HOURS)
         dt.dec_hour();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_DAYS)
+    else if (state == Clock::S_CLOCK_EDIT_DAYS)
         dt.dec_day();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_MONTHS)
+    else if (state == Clock::S_CLOCK_EDIT_MONTHS)
         dt.dec_month();
-    else 
-    if (state == Clock::S_CLOCK_EDIT_YEARS)
+    else if (state == Clock::S_CLOCK_EDIT_YEARS)
         dt.dec_year();
 
     dt.resolve_febrary_collision();
 }
 
 void ClockController::_inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
+    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or 
+        state == Clock::S_ALARM_TYPE2_EDIT_MINUTES)
         dt.inc_minute();
-    }
     else 
-    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
+    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or 
+        state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
         dt.inc_hour();
     else
-    if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
+    if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK)
         dt.switch_day();
-    }
 }
 
 void ClockController::_dec_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or state == Clock::S_ALARM_TYPE2_EDIT_MINUTES) {
+    if (state == Clock::S_ALARM_TYPE1_EDIT_MINUTES or 
+        state == Clock::S_ALARM_TYPE2_EDIT_MINUTES)
         dt.dec_minute();
-    } else 
-    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or state == Clock::S_ALARM_TYPE2_EDIT_HOURS) {
+    else 
+    if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS or 
+        state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
         dt.dec_hour();
-    } else 
-    if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
+    else 
+    if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK)
         dt.move_day_pointer();
-    }
 }
 
 void ClockController::_inc_timer_type1(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS) {
-        ++dt.origin_second;
-
-        if (dt.origin_second == 60) {
-            dt.origin_second = 0;
-            ++dt.origin_minute;
-
-            if (dt.origin_minute == 60) {
-                dt.origin_minute = 0;
-                ++dt.origin_hour;
-
-                if (dt.origin_hour == 100)
-                    dt.origin_hour = 0;
-            }
-        }
-    } else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES) {
-        ++dt.origin_minute;
-
-        if (dt.origin_minute == 60) {
-            dt.origin_minute = 0;
-            ++dt.origin_hour;
-
-            if (dt.origin_hour == 100)
-                dt.origin_hour = 0;
-        }
-    } else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS) {
-        ++dt.origin_hour;
-
-        if (dt.origin_hour == 100)
-            dt.origin_hour = 0;
-    }
+    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS)
+        dt.inc_second();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
+        dt.inc_minute();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
+        dt.inc_hour();
 }
 
 void ClockController::_dec_timer_type1(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS) {
-        uint32_t total_sec = dt.origin_hour * 3600UL + 
-                                dt.origin_minute * 60UL + 
-                                  dt.origin_second;
-
-        if (total_sec) {
-            --total_sec;
-        } else {
-            total_sec = 99 * 3600UL + 60 * 59UL + 59UL;
-        };
-
-        dt.origin_hour = total_sec / 3600UL;
-        dt.origin_minute = (total_sec - dt.origin_hour * 3600UL) / 60UL;
-        dt.origin_second = total_sec - dt.origin_hour * 3600UL - dt.origin_minute * 60UL;
-    } else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES) {
-        uint32_t total_sec = dt.origin_hour * 3600UL + 
-                                dt.origin_minute * 60UL + 
-                                  dt.origin_second;
-        uint8_t tmp = dt.origin_second;
-
-        if (total_sec >= 60) {
-            total_sec -= 60;
-        } else {
-            total_sec = 99 * 3600UL + 60 * 59UL + tmp;
-        };
-
-        dt.origin_hour = total_sec / 3600UL;
-        dt.origin_minute = (total_sec - dt.origin_hour * 3600UL) / 60UL;
-        dt.origin_second = total_sec - dt.origin_hour * 3600UL - dt.origin_minute * 60UL;
-    } else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS) {
-        if (dt.origin_hour == 0)
-            dt.origin_hour = 99;
-        else
-            --dt.origin_hour;
-    }
+    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS)
+        dt.dec_second();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
+        dt.dec_minute();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
+        dt.dec_hour();
 }
 
 void ClockController::_inc_timer_type2(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS) {
-        ++dt.origin_second;
-
-        if (dt.origin_second == 60) {
-            dt.origin_second = 0;
-
-            ++dt.origin_minute;
-
-            if (dt.origin_minute == 60) {
-                dt.origin_minute = 0;
-                dt.origin_hour = ++dt.origin_hour % 24;
-            }
-        }
-    }
-    else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES) {
-        ++dt.origin_minute;
-
-        if (dt.origin_minute == 60) {
-            dt.origin_minute = 0;
-            dt.origin_hour = ++dt.origin_hour % 24;
-        }
-    }
-    else 
-    if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
-        dt.origin_hour = ++dt.origin_hour % 24;
+    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS)
+        dt.inc_origin_second();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
+        dt.inc_origin_minute();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
+        dt.inc_origin_hour();
 }
 
 void ClockController::_dec_timer_type2(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS) {
-        if (dt.origin_second != 0)
-            --dt.origin_second;
-        else {
-            dt.origin_second = 59;
-
-            if (dt.origin_minute != 0)
-                --dt.origin_minute;
-            else {
-                dt.origin_minute = 59;
-
-                if (dt.origin_hour)
-                    --dt.origin_hour;
-                else
-                    dt.origin_hour = 23;
-            }
-        }
-    }
-    else
-    if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES) {
-        if (dt.origin_minute != 0)
-            --dt.origin_minute;
-        else {
-            dt.origin_minute = 59;
-
-            if (dt.origin_hour)
-                --dt.origin_hour;
-            else
-                dt.origin_hour = 23;
-        }
-    } else 
-    if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS) {
-        if (dt.origin_hour)
-            --dt.origin_hour;
-        else
-            dt.origin_hour = 23;
-    } 
+    if (state == Clock::S_TIMER_TYPE1_EDIT_SECONDS)
+        dt.dec_origin_second();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
+        dt.dec_origin_minute();
+    else if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
+        dt.dec_origin_hour();
 }
 
 void ClockController::_inc_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state, DateTime &curr_dt) {
@@ -234,16 +116,10 @@ void ClockController::_inc_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
 
     if (state == Clock::S_TIMER_TYPE2_EDIT_DAYS)
         dt.inc_origin_day();
-    else
-    if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
+    else if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
         dt.inc_origin_month();
-    else
-    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS) {
-        if (dt.origin_year == curr_dt.year)
-            dt.origin_year = curr_dt.year + 1;
-        else
-            dt.origin_year = curr_dt.year;
-    }
+    else if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
+        dt.inc_origin_year(curr_dt.year, 2);
 }
 
 void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state, DateTime &curr_dt) {
@@ -255,12 +131,8 @@ void ClockController::_dec_timer_type3(TimerDateTime &dt, Clock::CLOCK_SUBSTATES
     if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
         dt.dec_origin_month();
     else
-    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS) {
-        if (dt.origin_year == curr_dt.year)
-            dt.origin_year = curr_dt.year + 1;
-        else
-            dt.origin_year = curr_dt.year;
-    }
+    if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
+        dt.dec_origin_year(curr_dt.year, 2);
 }
 
 void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, DateTime &dt) {

@@ -209,6 +209,11 @@ void ClockController::_handle_stopwatch(StopwatchTime &stopwatch) {
 }
 
 void ClockController::sync(){
+    if (_strobe_counter) {
+        _clock.tick(Default::TICK_SIZE * _strobe_counter);
+        _strobe_counter = 0;
+    }
+
     _button1.update();
     _button2.update();
     _button3.update();
@@ -219,6 +224,7 @@ void ClockController::sync(){
     _process_stop_logic();
 
     _clock.flop_state_changed();
+    _clock.flop_datetimes();
 
     _button1.flop();
     _button2.flop();
@@ -614,7 +620,8 @@ void ClockController::_process_stop_logic() {
 }
 
 void ClockController::timer1_sync() {
-    _clock.tick(Default::TICK_SIZE);
+    // _clock.tick(Default::TICK_SIZE);
+    ++_strobe_counter;
 }
 
 void ClockController::timer2_sync() {

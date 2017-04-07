@@ -68,6 +68,7 @@ class Clock {
         bool hour_signal_done;
 
         void tick(uint16_t tick_size); // tick_size in mS
+        void flop_datetimes();
 
         void next_state();
         Clock::CLOCK_STATES state() const;

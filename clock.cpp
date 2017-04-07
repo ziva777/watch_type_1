@@ -301,3 +301,15 @@ void Clock::tick(uint16_t tick_size) {
         }
     }
 }
+
+void Clock::flop_datetimes() {
+    primary_datetime.trigger.flop();
+    secondary_datetime.trigger.flop();
+    alaram1_datetime.trigger.flop();
+    alaram2_datetime.trigger.flop();
+    alaram3_datetime.trigger.flop();
+    timer1_datetime.trigger.flop();
+    timer2_datetime.trigger.flop();
+    timer3_datetime.trigger.flop();
+    stopwatch.trigger.flop();
+}

@@ -39,8 +39,8 @@ namespace Default {
 
     // For initial clock walues
     namespace PrimaryClock {
-        const uint8_t HOUR {0};
-        const uint8_t MINUTE {0};
+        const uint8_t HOUR {23};
+        const uint8_t MINUTE {55};
         const uint8_t SECOND {0};
         const uint32_t MS {0};
 

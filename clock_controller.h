@@ -19,6 +19,8 @@ class ClockController {
         void timer2_sync(); // 144 mS
 
     private:
+        volatile uint8_t _strobe_counter = 0; // by timer1
+
         Clock &_clock;
         Display &_display;
 

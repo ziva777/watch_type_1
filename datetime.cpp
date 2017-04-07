@@ -6,10 +6,23 @@
 // #define CURR_SECOND ((__TIME__[6] - 48) * 10 + (__TIME__[7] - 48))
 
 // template<typename T, int BOUND>
+// inline void INCREMENT(T &v) {
+//     (v = ++v % BOUND);
+// }
+// 
+// template<typename T, int BOUND>
 // inline void DECREMENT(T &v) {
 //     (v ? --v : v=BOUND);
 // }
-// auto minute_decrement = DECREMENT<uint8_t, 59>;
+// 
+// template<typename T, int BOUND>
+// inline void DECREMENT_1(T &v) {
+//     (v > 1 ? --v : v=BOUND);
+// }
+// 
+// auto DECREMENT_SECOND = DECREMENT<uint8_t, 59>;
+// auto DECREMENT_MINUTE = DECREMENT<uint8_t, 59>;
+// auto DECREMENT_HOUR = DECREMENT<uint8_t, 23>;
 // or ... my weakness
 #define DECREMENT(V, BOUND) (V ? --V : V=BOUND)
 #define DECREMENT_1(V, BOUND) (V > 1 ? --V : V=BOUND)
@@ -184,8 +197,9 @@ uint32_t TimerDateTime::_get_total_origin_sec() const {
 void TimerDateTime::_set_total_origin_sec(uint32_t total_sec) {
     origin_hour = total_sec / seconds_per::HOUR;
     origin_minute = (total_sec - origin_hour * seconds_per::HOUR) / seconds_per::MINUTE;
-    origin_second = total_sec - origin_hour * seconds_per::HOUR 
-                        - origin_minute * seconds_per::MINUTE;
+    origin_second = total_sec - 
+                        origin_hour * seconds_per::HOUR - 
+                            origin_minute * seconds_per::MINUTE;
 }
 
 uint32_t TimerDateTime::_get_total_sec() const {
@@ -198,7 +212,9 @@ uint32_t TimerDateTime::_get_total_sec() const {
 void TimerDateTime::_set_total_sec(uint32_t total_sec) {
     hour = total_sec / seconds_per::HOUR;
     minute = (total_sec - hour * seconds_per::HOUR) / seconds_per::MINUTE;
-    second = total_sec - hour * seconds_per::HOUR - minute * seconds_per::MINUTE;
+    second = total_sec - 
+                hour * seconds_per::HOUR - 
+                    minute * seconds_per::MINUTE;
 }
 
 void TimerDateTime::dec_second() {
@@ -366,11 +382,13 @@ void TimerDateTime::tick_countdown1(uint16_t tick_size) {
 void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
     trigger.flop();
 
-    uint32_t total_sec_curr = dt.hour * seconds_per::HOUR + dt.minute * seconds_per::MINUTE + dt.second;
+    uint32_t total_sec_curr = dt.hour * seconds_per::HOUR + 
+                                dt.minute * seconds_per::MINUTE + 
+                                    dt.second;
     uint32_t total_sec_target = _get_total_origin_sec();
     uint32_t total_sec = (total_sec_curr < total_sec_target ? 
-                (total_sec_target - total_sec_curr) : 
-                (seconds_per::DAY - total_sec_curr + total_sec_target));
+                            (total_sec_target - total_sec_curr) : 
+                            (seconds_per::DAY - total_sec_curr + total_sec_target));
 
     _set_total_sec(total_sec);
     trigger.second_flip();
@@ -397,7 +415,7 @@ void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
 
         total_day = (day_curr < day_target ? 
                 (day_target - day_curr) : 
-                ((::is_leap(dt.year) ? 366 : 365) - day_curr + day_target));
+                    ((::is_leap(dt.year) ? 366 : 365) - day_curr + day_target));
 
         day = total_day - 1;
 
@@ -518,10 +536,14 @@ void DateTime::tick(uint16_t tick_size) {
                 inc_hour();
 
                 if (hour == 0) {
-                    inc_month();
+                    inc_day();
 
-                    if (month == 1) {
-                        inc_year();
+                    if (day == 1) {
+                        inc_month();
+
+                        if (month == 1) {
+                            inc_year();
+                        }
                     }
                 }
             }

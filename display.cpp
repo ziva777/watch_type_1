@@ -11,6 +11,27 @@ static const char *DAY_NAME[7] = {
     "Sa"
 };
 
+static const uint8_t CAPITAL_PEH = 168;
+static const uint8_t CAPITAL_VEH =  66;
+static const uint8_t CAPITAL_ESS = 67;
+static const uint8_t CAPITAL_CH = 171;
+
+static const uint8_t ESS = 99;
+static const uint8_t TEH = 191;
+static const uint8_t REH = 112;
+static const uint8_t BEH = 178;
+static const uint8_t ENN = 189;
+
+static const uint8_t *RUS_DAY_NAME[7][2] = {
+    {CAPITAL_VEH,  ESS},
+    {CAPITAL_PEH, ENN},
+    {CAPITAL_VEH, TEH},
+    {CAPITAL_ESS, REH},
+    {CAPITAL_CH,  TEH},
+    {CAPITAL_PEH, TEH},
+    {CAPITAL_ESS, BEH}
+};
+
 namespace DIGIT {
     char ZERO[8] = {
         0b11111,
@@ -148,7 +169,7 @@ void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
     pinMode(_contrast_pin, OUTPUT);
     pinMode(_brightness_pin, OUTPUT);
 
-    _load_digit(10, 0);
+    // _load_digit(10, 0);
 
     _lcd.begin(16, 2);
 }
@@ -192,7 +213,7 @@ void Display::print_clock_state(const Clock &clock) {
             break;
     }
 
-    print_text(1, 0, "                ");
+    print_text(1, 0, "    ");
 }
 
 void Display::_load_digit(uint8_t d, uint8_t p) {
@@ -244,16 +265,43 @@ void Display::print_clock_time(const DateTime &dt) {
                   dt.minute,
                   dt.second);
     print_text(0, 3, buff);
+
+    // static uint8_t c = 10;
+    // ++c;
+    // _lcd.setCursor(0, 0);
+    // _lcd.print((char)c);
+    // memset(buff, 0, sizeof(buff));
+    // sprintf(buff, "%3u", c);
+    // _lcd.setCursor(0, 1);
+    // _lcd.print(buff);
+
+    // if (dt.second % 10)
+    //     ++c;
+    // memset(buff, 0, sizeof(buff));
+    // sprintf(buff, "%u   ", c++);
+    // _lcd.setCursor(0, 1);
+    // _lcd.print(buff);
+    // _lcd.setCursor(0, 0);
+    // _lcd.print((char)123);
 }
 
 void Display::print_clock_date(const DateTime &dt) {
+    // char buff[17];
+    // memset(buff, 0, sizeof(buff));
+    // sprintf(buff, "%2u.%02u.%04u %s", 
+    //               dt.day,
+    //               dt.month,
+    //               dt.year,
+    //               DAY_NAME[dt.day_of_week]);
+    // print_text(1, 3, buff);
     char buff[17];
     memset(buff, 0, sizeof(buff));
-    sprintf(buff, "%2u.%02u.%04u %s", 
+    sprintf(buff, "%2u.%02u.%04u %c%c", 
                   dt.day,
                   dt.month,
                   dt.year,
-                  DAY_NAME[dt.day_of_week]);
+                  RUS_DAY_NAME[dt.day_of_week][0],
+                  RUS_DAY_NAME[dt.day_of_week][1]);
     print_text(1, 3, buff);
 }
 
@@ -353,9 +401,8 @@ void Display::print_timer_type3(const TimerDateTime &dt) {
                       dt.second);
         print_text(1, 0, buff);
     } else {
-        uint8_t c = 0;
         _lcd.setCursor(0, 1);
-        _lcd.write(c);
+        _lcd.write((char)123);
         sprintf(buff, "%2u %2u:%02u:%02u", 
                       dt.day % 100,
                       dt.hour,
@@ -417,27 +464,39 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
 
         if (state == Clock::S_CLOCK_EDIT_SECONDS) {
             sprintf(buff[0], " %2u:%02u:  ", dt.hour, dt.minute);
-            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         } else 
         if (state == Clock::S_CLOCK_EDIT_MINUTES) {
             sprintf(buff[0], " %2u:  :%02u", dt.hour, dt.second);
-            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         } else 
         if (state == Clock::S_CLOCK_EDIT_HOURS) {
             sprintf(buff[0], "   :%02u:%02u", dt.minute, dt.second);
-            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         } else 
         if (state == Clock::S_CLOCK_EDIT_DAYS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "  .%02u.%04u %s", dt.month, dt.year, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "  .%02u.%04u %c%c", dt.month, dt.year, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         } else
         if (state == Clock::S_CLOCK_EDIT_MONTHS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "%2u.  .%04u %s", dt.day, dt.year, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "%2u.  .%04u %c%c", dt.day, dt.year, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         } else 
         if (state == Clock::S_CLOCK_EDIT_YEARS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "%2u.%02u.     %s", dt.day, dt.month, DAY_NAME[dt.day_of_week]);
+            sprintf(buff[1], "%2u.%02u.     %c%c", dt.day, dt.month, 
+                    RUS_DAY_NAME[dt.day_of_week][0],
+                    RUS_DAY_NAME[dt.day_of_week][1]);
         }
 
         print_text(0, 3, buff[0]);

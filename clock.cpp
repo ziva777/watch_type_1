@@ -195,9 +195,36 @@ void Clock::flop_state_changed() {
     _state_change_trigger = false;
 }
 
+void Clock::primary_datetime_stop() {
+    _primary_datetime_stop = true;
+}
+
+void Clock::primary_datetime_resume() {
+    _primary_datetime_stop = false;
+}
+
+bool Clock::primary_datetime_stoped() const {
+    return _primary_datetime_stop;   
+}
+
+void Clock::secondary_datetime_stop() {
+    _secondary_datetime_stop = true;
+}
+
+void Clock::secondary_datetime_resume() {
+    _secondary_datetime_stop = false;
+}
+
+bool Clock::secondary_datetime_stoped() const {
+    return _secondary_datetime_stop;   
+}
+
 void Clock::tick(uint16_t tick_size) {
-    primary_datetime.tick(tick_size);
-    secondary_datetime.tick(tick_size);
+    if (not _primary_datetime_stop)
+        primary_datetime.tick(tick_size);
+    
+    if (not _secondary_datetime_stop)
+        secondary_datetime.tick(tick_size);
 
     if (alaram1_datetime.on) {
         alaram1_datetime.tick1(primary_datetime, tick_size);

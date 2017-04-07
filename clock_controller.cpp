@@ -15,9 +15,11 @@ void ClockController::setup() {
     _display.print_clock_datetime(_clock.primary_datetime);
 }
 
-void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        dt.align_second_up();
+void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, bool stopped) {
+    if (state == Clock::S_CLOCK_EDIT_SECONDS) {
+        if (not stopped)
+            dt.align_second_up();
+    }
     else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.inc_minute();
     else if (state == Clock::S_CLOCK_EDIT_HOURS)
@@ -32,9 +34,11 @@ void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) 
     dt.resolve_febrary_collision();
 }
 
-void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state) {
-    if (state == Clock::S_CLOCK_EDIT_SECONDS)
-        dt.align_second_down();
+void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, bool stopped) {
+    if (state == Clock::S_CLOCK_EDIT_SECONDS) {
+        if (not stopped)
+            dt.align_second_down();
+    }
     else if (state == Clock::S_CLOCK_EDIT_MINUTES)
         dt.dec_minute();
     else if (state == Clock::S_CLOCK_EDIT_HOURS)
@@ -231,7 +235,10 @@ void ClockController::sync(){
                     _display.set_brightness((_display.brightness() + 5) % 255);
                 }
             } else {
-                DateTime &dt = (state == Clock::S_CLOCK1 ? _clock.primary_datetime : _clock.secondary_datetime);
+                DateTime &dt = (state == Clock::S_CLOCK1 ? _clock.primary_datetime : 
+                                                           _clock.secondary_datetime);
+                bool stopped = (state == Clock::S_CLOCK1 ? _clock.primary_datetime_stoped() :
+                                                           _clock.secondary_datetime_stoped());
 
                 if (_button1.pressed())
                     _clock.next_substate();
@@ -242,11 +249,11 @@ void ClockController::sync(){
                     _display.print_clock_datetime(dt);
                 }
 
-                if (_button3.pressed() or _button3.pressed_repeat())
-                    _dec_datetime(dt, substate);
+                if (_button3.pressed() or _button3.pressed_repeat()) 
+                    _dec_datetime(dt, substate, stopped);
 
-                if (_button4.pressed() or _button4.pressed_repeat())
-                    _inc_datetime(dt, substate);
+                if (_button4.pressed() or _button4.pressed_repeat()) 
+                    _inc_datetime(dt, substate, stopped);
             } 
             break;
         }
@@ -574,6 +581,20 @@ void ClockController::sync(){
         }
     }
 
+    if (_button4.is_down() and 
+        state == Clock::S_CLOCK1 and 
+        substate == Clock::S_CLOCK_EDIT_SECONDS)
+        _clock.primary_datetime_stop();
+    else
+        _clock.primary_datetime_resume();
+
+    if (_button4.is_down() and 
+        state == Clock::S_CLOCK2 and 
+        substate == Clock::S_CLOCK_EDIT_SECONDS)
+        _clock.secondary_datetime_stop();
+    else
+        _clock.secondary_datetime_resume();
+
     _clock.flop_state_changed();
 
     _button1.flop();
@@ -583,9 +604,6 @@ void ClockController::sync(){
 }
 
 void ClockController::timer1_sync() {
-    // TODO: надо синхронизировать секундомер и таймер1 всегда,
-    // но не синхронизировать если в режиме редактирования
-    // нажата кнопка коррекции секунд.
     _clock.tick(Default::TICK_SIZE);
 }
 

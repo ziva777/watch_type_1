@@ -80,6 +80,14 @@ class Clock {
         void end_substate();
         Clock::CLOCK_SUBSTATES substate() const;
         Clock::CLOCK_SUBSTATES substate_prev() const;
+
+        void primary_datetime_stop();
+        void primary_datetime_resume();
+        bool primary_datetime_stoped() const;
+
+        void secondary_datetime_stop();
+        void secondary_datetime_resume();
+        bool secondary_datetime_stoped() const;
         
     private:
         Clock::CLOCK_STATES _state_curr{S_CLOCK1};
@@ -89,6 +97,8 @@ class Clock {
         Clock::CLOCK_SUBSTATES _substate_prev{S_NONE};
 
         bool _state_change_trigger {false};
+        volatile bool _primary_datetime_stop {false};
+        volatile bool _secondary_datetime_stop {false};
 };
 
 #endif // _CLOCK_H_

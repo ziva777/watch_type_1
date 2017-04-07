@@ -530,11 +530,24 @@ void DateTime::tick(uint16_t tick_size) {
 }
 
 void DateTime::align_second_up() {
-    (second < 30 ? second = 30 : second = 0, inc_minute());
+    // (second <= 30 ? second = 30 : second = 0);
+    // (second < 30 ? second = 30 : second = 0, inc_minute());
+    // (second < 30 ? second = 30 : second = 0, inc_minute());
+    // (second <= 30 ? second = 30 : second = 59, ms = 1000);
+    // ms = 0;
+    if (second > 30) {
+        second = 0;
+        ms = 0;
+        tick(60 * 1000);
+    } else if (second <= 30) {
+        second = 30;
+        ms = 0;
+    }
 }
 
 void DateTime::align_second_down() {
     (second < 30 ? second = 0 : second = 30);
+    ms = 0;
 }
 
 void DateTime::inc_second() {

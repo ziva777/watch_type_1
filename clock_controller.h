@@ -27,8 +27,8 @@ class ClockController {
         Button _button3{Pin::BUTTON3};
         Button _button4{Pin::BUTTON4};
 
-        void _inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state);
-        void _dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state);
+        void _inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, bool stopped);
+        void _dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, bool stopped);
         void _inc_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state);
         void _dec_alarm(AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state);
         void _inc_timer_type1(TimerDateTime &dt, Clock::CLOCK_SUBSTATES state);

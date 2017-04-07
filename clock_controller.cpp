@@ -19,17 +19,17 @@ void ClockController::_inc_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, 
     if (state == Clock::S_CLOCK_EDIT_SECONDS) {
         if (not stopped)
             dt.align_second_up();
-    }
-    else if (state == Clock::S_CLOCK_EDIT_MINUTES)
+    } else if (state == Clock::S_CLOCK_EDIT_MINUTES) {
         dt.inc_minute();
-    else if (state == Clock::S_CLOCK_EDIT_HOURS)
+    } else if (state == Clock::S_CLOCK_EDIT_HOURS) {
         dt.inc_hour();
-    else if (state == Clock::S_CLOCK_EDIT_DAYS)
+    } else if (state == Clock::S_CLOCK_EDIT_DAYS) {
         dt.inc_day();
-    else if (state == Clock::S_CLOCK_EDIT_MONTHS)
+    } else if (state == Clock::S_CLOCK_EDIT_MONTHS) {
         dt.inc_month();
-    else if (state == Clock::S_CLOCK_EDIT_YEARS)
+    } else if (state == Clock::S_CLOCK_EDIT_YEARS) {
         dt.inc_year();
+    }
 
     dt.resolve_febrary_collision();
 }
@@ -38,17 +38,17 @@ void ClockController::_dec_datetime(DateTime &dt, Clock::CLOCK_SUBSTATES state, 
     if (state == Clock::S_CLOCK_EDIT_SECONDS) {
         if (not stopped)
             dt.align_second_down();
-    }
-    else if (state == Clock::S_CLOCK_EDIT_MINUTES)
+    } else if (state == Clock::S_CLOCK_EDIT_MINUTES) {
         dt.dec_minute();
-    else if (state == Clock::S_CLOCK_EDIT_HOURS)
+    } else if (state == Clock::S_CLOCK_EDIT_HOURS) {
         dt.dec_hour();
-    else if (state == Clock::S_CLOCK_EDIT_DAYS)
+    } else if (state == Clock::S_CLOCK_EDIT_DAYS) {
         dt.dec_day();
-    else if (state == Clock::S_CLOCK_EDIT_MONTHS)
+    } else if (state == Clock::S_CLOCK_EDIT_MONTHS) {
         dt.dec_month();
-    else if (state == Clock::S_CLOCK_EDIT_YEARS)
+    } else if (state == Clock::S_CLOCK_EDIT_YEARS) {
         dt.dec_year();
+    }
 
     dt.resolve_febrary_collision();
 }
@@ -214,6 +214,19 @@ void ClockController::sync(){
     _button3.update();
     _button4.update();
 
+    _process_FSM_logic();
+    _process_display_logic();
+    _process_stop_logic();
+
+    _clock.flop_state_changed();
+
+    _button1.flop();
+    _button2.flop();
+    _button3.flop();
+    _button4.flop();
+}
+
+void ClockController::_process_FSM_logic() {
     Clock::CLOCK_STATES state = _clock.state();
     Clock::CLOCK_SUBSTATES substate = _clock.substate();
 
@@ -504,12 +517,11 @@ void ClockController::sync(){
             break;
         }
     }
+}
 
-    // TODO: нужно разобраться с перерисовкой экрана
-    // при переключении состояний контроллера
-
-    state = _clock.state();
-    substate = _clock.substate();
+void ClockController::_process_display_logic() {
+    Clock::CLOCK_STATES state = _clock.state();
+    Clock::CLOCK_SUBSTATES substate = _clock.substate();
 
     switch (state) {
         case Clock::S_CLOCK1: {
@@ -580,6 +592,11 @@ void ClockController::sync(){
             break;
         }
     }
+}
+
+void ClockController::_process_stop_logic() {
+    Clock::CLOCK_STATES state = _clock.state();
+    Clock::CLOCK_SUBSTATES substate = _clock.substate();
 
     if (_button4.is_down() and 
         state == Clock::S_CLOCK1 and 
@@ -594,13 +611,6 @@ void ClockController::sync(){
         _clock.secondary_datetime_stop();
     else
         _clock.secondary_datetime_resume();
-
-    _clock.flop_state_changed();
-
-    _button1.flop();
-    _button2.flop();
-    _button3.flop();
-    _button4.flop();
 }
 
 void ClockController::timer1_sync() {

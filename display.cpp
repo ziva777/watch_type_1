@@ -1,7 +1,7 @@
 #include "display.h"
 #include "settings.h"
 
-const char *DAY_NAME[7] = {
+static const char *DAY_NAME[7] = {
     "Su",
     "Mo",
     "Tu",
@@ -191,6 +191,8 @@ void Display::print_clock_state(const Clock &clock) {
             print_text(0, 0, "SW ");
             break;
     }
+
+    print_text(1, 0, "                ");
 }
 
 void Display::_load_digit(uint8_t d, uint8_t p) {

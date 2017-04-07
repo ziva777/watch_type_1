@@ -294,6 +294,13 @@ void ClockController::_process_FSM_logic() {
                 else 
                 if (_button2.pressed()) {
                     dt.on = !dt.on;
+
+                    if (state == Clock::S_ALARM1)
+                        _display.print_alarm_type1(dt);
+                    else if (state == Clock::S_ALARM2)
+                        _display.print_alarm_type2(dt);
+                    else if (state == Clock::S_ALARM3)
+                        _display.print_alarm_type3(dt);
                 }
             } else {
                 if (_button1.pressed())

@@ -51,6 +51,7 @@ class Display {
 
         bool _blink() const;
         void _load_digit(uint8_t d, uint8_t p);
+        void _blink_char();
 };
 
 #endif // _DISPLAY_H_

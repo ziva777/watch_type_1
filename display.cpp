@@ -257,6 +257,13 @@ void Display::_load_digit(uint8_t d, uint8_t p) {
     _lcd.createChar(p, c);
 }
 
+void Display::_blink_char() {
+    static uint8_t c = 238;
+    _lcd.setCursor(0, 1);
+    _lcd.print((char)c);
+    (c == 239 ? c = 238 : ++c);
+}
+
 void Display::print_clock_time(const DateTime &dt) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
@@ -265,8 +272,8 @@ void Display::print_clock_time(const DateTime &dt) {
                   dt.minute,
                   dt.second);
     print_text(0, 3, buff);
-
-    // static uint8_t c = 10;
+    _blink_char();
+    // static uint8_t c = 238;
     // ++c;
     // _lcd.setCursor(0, 0);
     // _lcd.print((char)c);
@@ -274,6 +281,8 @@ void Display::print_clock_time(const DateTime &dt) {
     // sprintf(buff, "%3u", c);
     // _lcd.setCursor(0, 1);
     // _lcd.print(buff);
+
+    
 
     // if (dt.second % 10)
     //     ++c;
@@ -321,6 +330,7 @@ void Display::print_alarm_type1(const AlarmDateTime &dt) {
 
     memset(buff, ' ', sizeof(buff) - 1);
     print_text(1, 0, buff);
+    _blink_char();
 }
 
 void Display::print_alarm_type2(const AlarmDateTime &dt) {
@@ -345,6 +355,7 @@ void Display::print_alarm_type3(const AlarmDateTime &dt) {
     buff[ 8 + 1] = (dt.days[5] ? 'F' : 'f');
     buff[ 9 + 1] = (dt.days[6] ? 'S' : 's');
     print_text(1, 0, buff);
+    _blink_char();
 }
 
 void Display::print_signal(bool on) {
@@ -355,6 +366,7 @@ void Display::print_signal(bool on) {
 
     memset(buff, ' ', sizeof(buff) - 1);
     print_text(1, 0, buff);
+    _blink_char();
 }
 
 void Display::print_timer_type1(const TimerDateTime &dt) {
@@ -374,6 +386,7 @@ void Display::print_timer_type1(const TimerDateTime &dt) {
                   dt.minute,
                   dt.second);
     print_text(1, 4, buff);
+    _blink_char();
 }
 
 void Display::print_timer_type2(const TimerDateTime &dt) {
@@ -410,6 +423,7 @@ void Display::print_timer_type3(const TimerDateTime &dt) {
                       dt.second);
         print_text(2, 1, buff);
     }
+    _blink_char();
 }
 
 void Display::print_stopwatch(const StopwatchTime &t) {
@@ -437,6 +451,7 @@ void Display::print_stopwatch(const StopwatchTime &t) {
     }
       
     print_text(1, 0, buff);
+    _blink_char();
 }
 
 void Display::set_contrast(uint8_t contrast) {

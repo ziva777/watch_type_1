@@ -209,12 +209,14 @@ uint32_t TimerDateTime::_get_total_sec() const {
     return total_sec;
 }
 
-void TimerDateTime::_set_total_sec(uint32_t total_sec) {
+bool TimerDateTime::_set_total_sec(uint32_t total_sec) {
+    uint8_t s = second;
     hour = total_sec / seconds_per::HOUR;
     minute = (total_sec - hour * seconds_per::HOUR) / seconds_per::MINUTE;
     second = total_sec - 
                 hour * seconds_per::HOUR - 
                     minute * seconds_per::MINUTE;
+    return s != second;
 }
 
 void TimerDateTime::dec_second() {
@@ -390,8 +392,8 @@ void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
                             (total_sec_target - total_sec_curr) : 
                             (seconds_per::DAY - total_sec_curr + total_sec_target));
 
-    _set_total_sec(total_sec);
-    trigger.second_flip();
+    if (_set_total_sec(total_sec))
+        trigger.second_flip();
 
     if (total_sec == seconds_per::DAY) {
         on = false;
@@ -403,9 +405,10 @@ void TimerDateTime::tick_countdown2(const DateTime &dt, uint16_t tick_size) {
 void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
     trigger.flop();
 
-    if (origin_year >= dt.year and 
-        origin_month >= dt.month and 
-        origin_day > dt.day) {
+    if ((origin_year > dt.year) or
+        (origin_year == dt.year and origin_month > dt.month) or
+        (origin_year == dt.year and origin_month == dt.month and origin_day > dt.day) ) {
+        uint16_t s = second;
         uint16_t total_day = 0;
         uint16_t day_curr = day_number(dt.day, dt.month, dt.year);
         uint16_t day_target = day_number(origin_day, origin_month, origin_year);
@@ -430,7 +433,8 @@ void TimerDateTime::tick_countdown3(const DateTime &dt, uint16_t tick_size) {
                 ringing = true;
             }
 
-        trigger.second_flip();
+        if (s != second)
+            trigger.second_flip();
     } else {
         // no sence
         day = 0;

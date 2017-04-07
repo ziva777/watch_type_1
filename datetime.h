@@ -142,7 +142,7 @@ class TimerDateTime {
         uint32_t _get_total_origin_sec() const;
         void _set_total_origin_sec(uint32_t total_sec);
         uint32_t _get_total_sec() const;
-        void _set_total_sec(uint32_t total_sec);
+        bool _set_total_sec(uint32_t total_sec);
 };
 
 class StopwatchTime {

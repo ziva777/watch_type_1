@@ -359,7 +359,9 @@ void ClockController::_process_FSM_logic() {
                     } else 
                     if (dt.stoppped and dt.on) {
                         dt.stoppped = false;
-                    }   
+                    } 
+
+                    _display.print_timer_type1(dt);
                 } else 
                 if (_button3.pressed_hard()) {
                     if (dt.on) {
@@ -411,7 +413,9 @@ void ClockController::_process_FSM_logic() {
                     } else 
                     if (dt.stoppped and dt.on) {
                         dt.stoppped = false;
-                    }   
+                    }
+
+                    _display.print_timer_type2(dt);
                 } else 
                 if (_button3.pressed_hard()) {
                     if (dt.on) {
@@ -463,7 +467,9 @@ void ClockController::_process_FSM_logic() {
                     } else 
                     if (dt.stoppped and dt.on) {
                         dt.stoppped = false;
-                    }   
+                    }
+
+                    _display.print_timer_type3(dt);
                 } else 
                 if (_button3.pressed_hard()) {
                     if (dt.on) {

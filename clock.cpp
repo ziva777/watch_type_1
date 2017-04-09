@@ -1,5 +1,56 @@
 #include "clock.h"
+#include "timer1.h"
+#include "settings.h"
 #include <Arduino.h>
+
+bool Clock::tuning() const { 
+    return _tuning;
+}
+
+void Clock::begin_tuning() { 
+    _tuning = true;
+}
+
+void Clock::end_tuning() { 
+    _tuning = false;
+    _write_timeshift();
+}
+
+void Clock::inc_timeshift() {
+    if (_timeshift < 65535L * Default::TIMER1_TICKS_PER_SECOND)
+        _timeshift += 1;
+}
+
+void Clock::dec_timeshift() {
+    if (_timeshift > -65536L * Default::TIMER1_TICKS_PER_SECOND)
+        _timeshift -= 1;
+}
+
+void Clock::set_timeshift(int32_t shift) {
+    _timeshift = shift;
+}
+
+int32_t Clock::timeshift() {
+    return _timeshift;
+}
+
+void Clock::_write_timeshift() {
+    uint16_t counts = Default::TIMER1_COUNTS;
+    counts += _timeshift / Default::TIMER1_TICKS_PER_SECOND;
+    _timeshift_ticks = 0;
+
+    if (_timeshift % Default::TIMER1_TICKS_PER_SECOND)
+        _timeshift_ticks_bound = abs(Default::TICK_SIZE * 1000L / (_timeshift % Default::TIMER1_TICKS_PER_SECOND));
+    else
+        _timeshift_ticks_bound = 0;
+
+    Timer1::instance().shift(counts);
+
+    Serial.print("ticks = ");
+    Serial.print(_timeshift_ticks);
+    Serial.print("; bound = ");
+    Serial.println(_timeshift_ticks_bound);
+}
 
 void Clock::next_state() {
     _state_prev = _state_curr;
@@ -220,6 +271,17 @@ bool Clock::secondary_datetime_stoped() const {
 }
 
 void Clock::tick(uint16_t tick_size) {
+    if (_timeshift != 0 and _timeshift_ticks_bound) {
+        if (++_timeshift_ticks == _timeshift_ticks_bound) {
+            _timeshift_ticks = 0;
+
+            if (_timeshift > 0)
+                tick_size += 100;
+            else if (_timeshift < 0)
+                return;
+        }
+    }
+
     if (not _primary_datetime_stop)
         primary_datetime.tick(tick_size);
     

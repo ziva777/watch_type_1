@@ -145,7 +145,10 @@ void ClockController::_handle_clock_substate(Clock::CLOCK_SUBSTATES substate, Da
         if (dt.trigger.date_triggered())
             _display.print_clock_date(dt);
     } else {
-        _display.print_edit_clock(dt, substate);
+        if (_clock.tuning())
+            _display.print_edit_clock_tuning(_clock.timeshift());
+        else
+            _display.print_edit_clock(dt, substate);
     }
 }
 
@@ -247,6 +250,14 @@ void ClockController::_process_FSM_logic() {
                 if (_button2.pressed_hard()) {
                     _clock.begin_substate();
                 } else 
+                if (_clock.tuning()) {
+                    if (_button3.pressed() or _button3.pressed_repeat()) {
+                        _clock.dec_timeshift();
+                    } else
+                    if (_button4.pressed() or _button3.pressed_repeat()) {
+                        _clock.inc_timeshift();
+                    }                    
+                } else
                 if (_button3.pressed() or _button3.pressed_repeat()) {
                     _display.set_contrast((_display.contrast() + 10) % 100);
                 } else 
@@ -258,21 +269,47 @@ void ClockController::_process_FSM_logic() {
                                                            _clock.secondary_datetime);
                 bool stopped = (state == Clock::S_CLOCK1 ? _clock.primary_datetime_stoped() :
                                                            _clock.secondary_datetime_stoped());
-
+                
                 if (_button1.pressed())
                     _clock.next_substate();
+
+                if ((state == Clock::S_CLOCK1) and 
+                     _button1.pressed_hard() and 
+                     (substate == Clock::S_CLOCK_EDIT_MINUTES)) {
+                    if (_clock.tuning())
+                        _clock.end_tuning();
+                    else
+                        _clock.begin_tuning();
+
+                    // _display.print_clock_state(_clock);
+                }
 
                 if (_button2.pressed()) {
                     _clock.end_substate();
                     substate = _clock.substate();
+
+                    if (_clock.tuning())
+                        _clock.end_tuning();
+
+                    _display.print_clock_state(_clock);
                     _display.print_clock_datetime(dt);
                 }
 
-                if (_button3.pressed() or _button3.pressed_repeat()) 
-                    _dec_datetime(dt, substate, stopped);
+                if (_clock.tuning()) {
+                    if (_button3.pressed() or _button3.pressed_repeat())
+                        _clock.dec_timeshift();
 
-                if (_button4.pressed() or _button4.pressed_repeat()) 
-                    _inc_datetime(dt, substate, stopped);
+                    if (_button4.pressed() or _button4.pressed_repeat()) 
+                        _clock.inc_timeshift();
+                } else {
+                    if (_button3.pressed() or _button3.pressed_repeat())
+                        _dec_datetime(dt, substate, stopped);
+
+                    if (_button4.pressed() or _button4.pressed_repeat()) 
+                        _inc_datetime(dt, substate, stopped);
+                }
+
+                
             } 
             break;
         }

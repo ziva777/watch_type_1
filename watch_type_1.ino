@@ -10,7 +10,7 @@ void timer1_interrupt() {
 }
 
 void setup() {
-  // Serial.begin(115200);
+  Serial.begin(115200);
 
   set_sleep_mode(SLEEP_MODE_STANDBY);
   ADCSRA = 0;

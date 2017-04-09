@@ -42,6 +42,8 @@ class Display {
         uint8_t contrast() const;
         uint8_t brightness() const;
 
+        void print_edit_clock_tuning(uint32_t timeshift);
+
     private:
         LiquidCrystal _lcd;
         uint8_t _contrast_pin;

@@ -108,6 +108,17 @@ Display::Display()
     
 }
 
+void Display::print_edit_clock_tuning(uint32_t timeshift) {
+    char buff[17];
+    memset(buff, 0, sizeof(buff));
+
+    print_text(0, 0, "TU              ");
+    sprintf(buff, "%11d uS/S", timeshift);
+    print_text(1, 0, buff);
+
+    // _blink_char();
+}
+
 void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
     _contrast_pin = contrast_pin;
     _brightness_pin = brightness_pin;

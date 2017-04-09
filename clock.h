@@ -89,6 +89,15 @@ class Clock {
         void secondary_datetime_stop();
         void secondary_datetime_resume();
         bool secondary_datetime_stoped() const;
+
+        bool tuning() const;
+        void begin_tuning();
+        void end_tuning();
+
+        void inc_timeshift();
+        void dec_timeshift();
+        void set_timeshift(int32_t shift); // uS per second
+        int32_t timeshift();
         
     private:
         Clock::CLOCK_STATES _state_curr{S_CLOCK1};
@@ -100,6 +109,13 @@ class Clock {
         bool _state_change_trigger {false};
         volatile bool _primary_datetime_stop {false};
         volatile bool _secondary_datetime_stop {false};
+        bool _tuning {false};
+
+        int32_t _timeshift {0};
+        int32_t _timeshift_ticks {0};
+        int32_t _timeshift_ticks_bound {0};
+
+        void _write_timeshift();
 };
 
 #endif // _CLOCK_H_

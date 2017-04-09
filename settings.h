@@ -33,9 +33,11 @@ namespace Default {
     const uint8_t BRIGHTNESS = 10;
 
     // For clock oscillate
-    const uint16_t TICK_SIZE = 100; // 100 mS
+    const uint16_t TICK_SIZE = 100; // mS
     const Timer1::FCPU_SCALES TIMER1_SCALE = Timer1::SCALE_64; 
     const uint16_t TIMER1_COUNTS = 25000 - 1;
+    const uint16_t TIMER1_TICK_SIZE = 4; // mS
+    const uint16_t TIMER1_TICKS_PER_SECOND = 40;
 
     // For initial clock walues
     namespace PrimaryClock {

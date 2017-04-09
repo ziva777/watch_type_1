@@ -22,7 +22,10 @@ class Timer1 {
         static const Timer1 & instance();
         
         void start(Timer1::FCPU_SCALES prescalar, uint16_t counts);
+        void shift(uint16_t counts);
         void attach(TimerCallbackFunction callback);
+
+        uint16_t counts() const;
       
     private:
         Timer1() {};

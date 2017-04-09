@@ -25,6 +25,18 @@ void Timer1::start(Timer1::FCPU_SCALES prescalar, uint16_t counts) {
     interrupts();
 }
 
+void Timer1::shift(uint16_t counts) {
+    _counts = counts;
+    // noInterrupts();
+    TCNT1 = 0;
+    OCR1A = _counts;
+    // interrupts();
+}
+
 void Timer1::attach(TimerCallbackFunction callback) {
     timer_callback_function = callback;
+}
+
+uint16_t Timer1::counts() const {
+    return _counts;
 }

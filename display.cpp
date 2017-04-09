@@ -1,11 +1,11 @@
 #include "display.h"
 #include "settings.h"
 
-// #define END_LANG
-// #define RUS_LANG
-
+// #define ENG_LANG
+#define RUS_LANG
 
 namespace letter {
+#if defined(RUS_LANG)
     static const uint8_t CAPITAL_PEH = 168;
     static const uint8_t CAPITAL_VEH =  66;
     static const uint8_t CAPITAL_ESS = 67;
@@ -46,7 +46,7 @@ namespace letter {
         190, //PEH,
         'c'  //ESS
     };
-
+#elif defined(ENG_LANG)
     static const char *DAY_NAME[7] = {
         "Su",
         "Mo",
@@ -76,17 +76,27 @@ namespace letter {
         'f',
         's'
     };
+#endif
 
     char * long_day_name(uint8_t day_no) {
         static char buff[3];
         buff[0] = buff[1] = buff[2] = 0;
+#if defined(RUS_LANG)
         sprintf(buff, "%c%c", RUS_DAY_NAME[day_no][0],
                                 RUS_DAY_NAME[day_no][1]);
+#elif defined(ENG_LANG)
+        sprintf(buff, "%c%c", DAY_NAME[day_no][0],
+                                DAY_NAME[day_no][1]);
+#endif
         return buff;
     }
 
     uint8_t day_char_name(uint8_t day_no, int armed) {
+#if defined(RUS_LANG)
         return (armed ? letter::RUS_SHORT_DAY_NAME_ON[day_no] : letter::RUS_SHORT_DAY_NAME_OFF[day_no]);
+#elif defined(ENG_LANG)
+        return (armed ? letter::SHORT_DAY_NAME_ON[day_no] : letter::SHORT_DAY_NAME_OFF[day_no]);
+#endif
     }
 
 };

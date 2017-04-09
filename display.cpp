@@ -1,198 +1,94 @@
 #include "display.h"
 #include "settings.h"
 
-static const char *DAY_NAME[7] = {
-    "Su",
-    "Mo",
-    "Tu",
-    "We",
-    "Th",
-    "Fr",
-    "Sa"
-};
+// #define END_LANG
+// #define RUS_LANG
 
-static const char SHORT_DAY_NAME_ON[7] = {
-    'S',
-    'M',
-    'T',
-    'W',
-    'T',
-    'F',
-    'S'
-};
 
-static const char SHORT_DAY_NAME_OFF[7] = {
-    's',
-    'm',
-    't',
-    'w',
-    't',
-    'f',
-    's'
-};
+namespace letter {
+    static const uint8_t CAPITAL_PEH = 168;
+    static const uint8_t CAPITAL_VEH =  66;
+    static const uint8_t CAPITAL_ESS = 67;
+    static const uint8_t CAPITAL_CH = 171;
 
-static const uint8_t CAPITAL_PEH = 168;
-static const uint8_t CAPITAL_VEH =  66;
-static const uint8_t CAPITAL_ESS = 67;
-static const uint8_t CAPITAL_CH = 171;
+    static const uint8_t ESS = 99;
+    static const uint8_t TEH = 191;
+    static const uint8_t REH = 112;
+    static const uint8_t BEH = 178;
+    static const uint8_t ENN = 189;
 
-static const uint8_t ESS = 99;
-static const uint8_t TEH = 191;
-static const uint8_t REH = 112;
-static const uint8_t BEH = 178;
-static const uint8_t ENN = 189;
-
-static const char RUS_SHORT_DAY_NAME_ON[7] = {
-    CAPITAL_VEH,
-    CAPITAL_PEH,
-    CAPITAL_VEH,
-    CAPITAL_ESS,
-    CAPITAL_CH,
-    CAPITAL_PEH,
-    CAPITAL_ESS
-};
-
-static const char RUS_SHORT_DAY_NAME_OFF[7] = {
-    179, //VEH,
-    190, //PEH,
-    179, //VEH,
-    'c', //ESS,
-    193, //CH,
-    190, //PEH,
-    'c'  //ESS
-};
-
-static const uint8_t *RUS_DAY_NAME[7][2] = {
-    {CAPITAL_VEH, ESS},
-    {CAPITAL_PEH, ENN},
-    {CAPITAL_VEH, TEH},
-    {CAPITAL_ESS, REH},
-    {CAPITAL_CH,  TEH},
-    {CAPITAL_PEH, TEH},
-    {CAPITAL_ESS, BEH}
-};
-
-namespace DIGIT {
-    char ZERO[8] = {
-        0b11111,
-        0b11111,
-        0b11011,
-        0b11011,
-        0b11011,
-        0b11011,
-        0b11111,
-        0b11111
+    static const uint8_t *RUS_DAY_NAME[7][3] = {
+        {CAPITAL_VEH, ESS},
+        {CAPITAL_PEH, ENN},
+        {CAPITAL_VEH, TEH},
+        {CAPITAL_ESS, REH},
+        {CAPITAL_CH,  TEH},
+        {CAPITAL_PEH, TEH},
+        {CAPITAL_ESS, BEH}
     };
 
-    char ONE[8] = {
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011
+    static const uint8_t RUS_SHORT_DAY_NAME_ON[7] = {
+        CAPITAL_VEH,
+        CAPITAL_PEH,
+        CAPITAL_VEH,
+        CAPITAL_ESS,
+        CAPITAL_CH,
+        CAPITAL_PEH,
+        CAPITAL_ESS
     };
 
-    char TWO[8] = {
-        0b11111,
-        0b11111,
-        0b00011,
-        0b11111,
-        0b11111,
-        0b11000,
-        0b11111,
-        0b11111
+    static const uint8_t RUS_SHORT_DAY_NAME_OFF[7] = {
+        179, //VEH,
+        190, //PEH,
+        179, //VEH,
+        'c', //ESS,
+        193, //CH,
+        190, //PEH,
+        'c'  //ESS
     };
 
-    char THREE[8] = {
-        0b11111,
-        0b11111,
-        0b00011,
-        0b01111,
-        0b01111,
-        0b00011,
-        0b11111,
-        0b11111
+    static const char *DAY_NAME[7] = {
+        "Su",
+        "Mo",
+        "Tu",
+        "We",
+        "Th",
+        "Fr",
+        "Sa"
     };
 
-    char FOUR[8] = {
-        0b11000,
-        0b11011,
-        0b11011,
-        0b11111,
-        0b11111,
-        0b00011,
-        0b00011,
-        0b00011
+    static const char SHORT_DAY_NAME_ON[7] = {
+        'S',
+        'M',
+        'T',
+        'W',
+        'T',
+        'F',
+        'S'
     };
 
-    char FIVE[8] = {
-        0b11111,
-        0b11111,
-        0b11000,
-        0b11111,
-        0b11111,
-        0b00011,
-        0b11111,
-        0b11111
+    static const char SHORT_DAY_NAME_OFF[7] = {
+        's',
+        'm',
+        't',
+        'w',
+        't',
+        'f',
+        's'
     };
 
-    char SIX[8] = {
-        0b11111,
-        0b11111,
-        0b11000,
-        0b11111,
-        0b11111,
-        0b11011,
-        0b11111,
-        0b11111
-    };
+    char * long_day_name(uint8_t day_no) {
+        static char buff[3];
+        buff[0] = buff[1] = buff[2] = 0;
+        sprintf(buff, "%c%c", RUS_DAY_NAME[day_no][0],
+                                RUS_DAY_NAME[day_no][1]);
+        return buff;
+    }
 
-    char SEVEN[8] = {
-        0b11111,
-        0b11111,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011,
-        0b00011
-    };
+    uint8_t day_char_name(uint8_t day_no, int armed) {
+        return (armed ? letter::RUS_SHORT_DAY_NAME_ON[day_no] : letter::RUS_SHORT_DAY_NAME_OFF[day_no]);
+    }
 
-    char EIGHT[8] = {
-        0b11111,
-        0b11111,
-        0b11011,
-        0b11111,
-        0b11111,
-        0b11011,
-        0b11111,
-        0b11111
-    };
-
-    char NINE[8] = {
-        0b11111,
-        0b11111,
-        0b11011,
-        0b11111,
-        0b11111,
-        0b00011,
-        0b11111,
-        0b11111
-    };
-
-    char TEN[8] = {
-        0b00000,
-        0b00000,
-        0b10111,
-        0b10101,
-        0b10101,
-        0b10101,
-        0b10111,
-        0b00000
-    };
 };
 
 Display::Display() 
@@ -208,8 +104,6 @@ void Display::setup(uint8_t contrast_pin, uint8_t brightness_pin) {
 
     pinMode(_contrast_pin, OUTPUT);
     pinMode(_brightness_pin, OUTPUT);
-
-    // _load_digit(10, 0);
 
     _lcd.begin(16, 2);
 }
@@ -256,47 +150,6 @@ void Display::print_clock_state(const Clock &clock) {
     print_text(1, 0, "    ");
 }
 
-void Display::_load_digit(uint8_t d, uint8_t p) {
-    char *c = NULL;
-
-    switch (d) {
-        case 0:
-            c = DIGIT::ZERO;
-            break;
-        case 1:
-            c = DIGIT::ONE;
-            break;
-        case 2:
-            c = DIGIT::TWO;
-            break;
-        case 3:
-            c = DIGIT::THREE;
-            break;
-        case 4:
-            c = DIGIT::FOUR;
-            break;
-        case 5:
-            c = DIGIT::FIVE;
-            break;
-        case 6:
-            c = DIGIT::SIX;
-            break;
-        case 7:
-            c = DIGIT::SEVEN;
-            break;
-        case 8:
-            c = DIGIT::EIGHT;
-            break;
-        case 9:
-            c = DIGIT::NINE;
-            break;
-        case 10:
-            c = DIGIT::TEN;
-            break;
-    }
-    _lcd.createChar(p, c);
-}
-
 void Display::_blink_char() {
     static uint8_t c = 238;
     _lcd.setCursor(0, 1);
@@ -326,12 +179,11 @@ void Display::print_clock_time(const DateTime &dt) {
 void Display::print_clock_date(const DateTime &dt) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
-    sprintf(buff, "%2u.%02u.%04u %c%c", 
+    sprintf(buff, "%2u.%02u.%04u %s", 
                   dt.day,
                   dt.month,
                   dt.year,
-                  RUS_DAY_NAME[dt.day_of_week][0],
-                  RUS_DAY_NAME[dt.day_of_week][1]);
+                  letter::long_day_name(dt.day_of_week));
     print_text(1, 3, buff);
 }
 
@@ -358,6 +210,28 @@ void Display::print_alarm_type2(const AlarmDateTime &dt) {
     print_alarm_type1(dt);
 }
 
+char * Display::_fill_str_with_day_names(const AlarmDateTime &dt, char *buff, uint8_t buff_offset) {
+    buff[buff_offset++] = letter::day_char_name(1, dt.days[1]);
+    buff[buff_offset++] = letter::day_char_name(2, dt.days[2]);
+    buff[buff_offset++] = letter::day_char_name(3, dt.days[3]);
+    buff[buff_offset++] = letter::day_char_name(4, dt.days[4]);
+    buff[buff_offset++] = letter::day_char_name(5, dt.days[5]);
+    buff[buff_offset++] = letter::day_char_name(6, dt.days[6]);
+    buff[buff_offset++] = letter::day_char_name(0, dt.days[0]);
+    return buff;
+}
+
+char * Display::_fill_str_with_day_names_blink(const AlarmDateTime &dt, char *buff, uint8_t buff_offset) {
+    buff[buff_offset++] = (dt.day_pointer == 1 ? ' ' : letter::day_char_name(1, dt.days[1]));
+    buff[buff_offset++] = (dt.day_pointer == 2 ? ' ' : letter::day_char_name(2, dt.days[2]));
+    buff[buff_offset++] = (dt.day_pointer == 3 ? ' ' : letter::day_char_name(3, dt.days[3]));
+    buff[buff_offset++] = (dt.day_pointer == 4 ? ' ' : letter::day_char_name(4, dt.days[4]));
+    buff[buff_offset++] = (dt.day_pointer == 5 ? ' ' : letter::day_char_name(5, dt.days[5]));
+    buff[buff_offset++] = (dt.day_pointer == 6 ? ' ' : letter::day_char_name(6, dt.days[6]));
+    buff[buff_offset++] = (dt.day_pointer == 0 ? ' ' : letter::day_char_name(0, dt.days[0]));
+    return buff;
+}
+
 void Display::print_alarm_type3(const AlarmDateTime &dt) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
@@ -368,14 +242,7 @@ void Display::print_alarm_type3(const AlarmDateTime &dt) {
     print_text(0, 4, buff);
 
     memset(buff, ' ', 16);
-    buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
-    buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
-    buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
-    buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
-    buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
-    buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
-    buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
-    print_text(1, 0, buff);
+    print_text(1, 0, _fill_str_with_day_names(dt, buff, 5));
     _blink_char();
 }
 
@@ -500,39 +367,28 @@ void Display::print_edit_clock(const DateTime &dt, Clock::CLOCK_SUBSTATES state)
 
         if (state == Clock::S_CLOCK_EDIT_SECONDS) {
             sprintf(buff[0], " %2u:%02u:  ", dt.hour, dt.minute);
-            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
-        } else 
-        if (state == Clock::S_CLOCK_EDIT_MINUTES) {
+            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, 
+                                letter::long_day_name(dt.day_of_week));
+        } else if (state == Clock::S_CLOCK_EDIT_MINUTES) {
             sprintf(buff[0], " %2u:  :%02u", dt.hour, dt.second);
-            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
-        } else 
-        if (state == Clock::S_CLOCK_EDIT_HOURS) {
+            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, 
+                                letter::long_day_name(dt.day_of_week));
+        } else if (state == Clock::S_CLOCK_EDIT_HOURS) {
             sprintf(buff[0], "   :%02u:%02u", dt.minute, dt.second);
-            sprintf(buff[1], "%2u.%02u.%04u %c%c", dt.day, dt.month, dt.year, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
-        } else 
-        if (state == Clock::S_CLOCK_EDIT_DAYS) {
+            sprintf(buff[1], "%2u.%02u.%04u %s", dt.day, dt.month, dt.year, 
+                                letter::long_day_name(dt.day_of_week));
+        } else if (state == Clock::S_CLOCK_EDIT_DAYS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "  .%02u.%04u %c%c", dt.month, dt.year, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
-        } else
-        if (state == Clock::S_CLOCK_EDIT_MONTHS) {
+            sprintf(buff[1], "  .%02u.%04u %s", dt.month, dt.year, 
+                                letter::long_day_name(dt.day_of_week));
+        } else if (state == Clock::S_CLOCK_EDIT_MONTHS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "%2u.  .%04u %c%c", dt.day, dt.year, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
-        } else 
-        if (state == Clock::S_CLOCK_EDIT_YEARS) {
+            sprintf(buff[1], "%2u.  .%04u %s", dt.day, dt.year, 
+                                letter::long_day_name(dt.day_of_week));
+        } else if (state == Clock::S_CLOCK_EDIT_YEARS) {
             sprintf(buff[0], " %2u:%02u:%02u", dt.hour, dt.minute, dt.second);
-            sprintf(buff[1], "%2u.%02u.     %c%c", dt.day, dt.month, 
-                    RUS_DAY_NAME[dt.day_of_week][0],
-                    RUS_DAY_NAME[dt.day_of_week][1]);
+            sprintf(buff[1], "%2u.%02u.     %s", dt.day, dt.month, 
+                                letter::long_day_name(dt.day_of_week));
         }
 
         print_text(0, 3, buff[0]);
@@ -551,8 +407,7 @@ void Display::print_edit_alarm_type1(const AlarmDateTime &dt, Clock::CLOCK_SUBST
             sprintf(buff, "%2u:    %s", 
                           dt.hour,
                           (dt.on ? "on " : "off"));
-        else
-        if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS)
+        else if (state == Clock::S_ALARM_TYPE1_EDIT_HOURS)
             sprintf(buff, "  :%02u  %s", 
                           dt.minute,
                           (dt.on ? "on " : "off"));
@@ -570,15 +425,15 @@ void Display::print_edit_alarm_type2(const AlarmDateTime &dt, Clock::CLOCK_SUBST
 void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBSTATES state) {
     char buff[17];
     memset(buff, 0, sizeof(buff));
+    bool blink = _blink();
 
-    if (_blink()) {
+    if (blink) {
         if (state == Clock::S_ALARM_TYPE2_EDIT_MINUTES)
             sprintf(buff, "%2u:    %s", 
                           dt.hour,
                           // dt.minute,
                           (dt.on ? "on" : "off"));
-        else
-        if (state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
+        else if (state == Clock::S_ALARM_TYPE2_EDIT_HOURS)
             sprintf(buff, "  :%02u  %s", 
                           // dt.hour,
                           dt.minute,
@@ -600,31 +455,12 @@ void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBST
     memset(buff, ' ', 16);
 
     if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
-        if (((millis() % 1000) < 250)) {
-            buff[10 + 1] = (dt.day_pointer == 0 ? ' ' : (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]));
-            buff[ 4 + 1] = (dt.day_pointer == 1 ? ' ' : (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]));
-            buff[ 5 + 1] = (dt.day_pointer == 2 ? ' ' : (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]));
-            buff[ 6 + 1] = (dt.day_pointer == 3 ? ' ' : (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]));
-            buff[ 7 + 1] = (dt.day_pointer == 4 ? ' ' : (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]));
-            buff[ 8 + 1] = (dt.day_pointer == 5 ? ' ' : (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]));
-            buff[ 9 + 1] = (dt.day_pointer == 6 ? ' ' : (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]));
-        } else {
-            buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
-            buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
-            buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
-            buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
-            buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
-            buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
-            buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
-        }
+        if (blink)
+            _fill_str_with_day_names_blink(dt, buff, 5);
+        else
+            _fill_str_with_day_names(dt, buff, 5);
     } else {
-            buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
-            buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
-            buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
-            buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
-            buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
-            buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
-            buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
+            _fill_str_with_day_names(dt, buff, 5);
     }
     print_text(1, 0, buff);
 }
@@ -640,15 +476,13 @@ void Display::print_edit_timer_type1(const TimerDateTime &dt, Clock::CLOCK_SUBST
                           dt.origin_minute,
                           //dt.origin_second,
                           (dt.stoppped ? "off" : "on "));
-        else
-        if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
+        else if (state == Clock::S_TIMER_TYPE1_EDIT_MINUTES)
             sprintf(buff, "%2u:  :%02u %s", 
                           dt.origin_hour,
                           // dt.origin_minute,
                           dt.origin_second,
                           (dt.stoppped ? "off" : "on "));
-        else
-        if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
+        else if (state == Clock::S_TIMER_TYPE1_EDIT_HOURS)
             sprintf(buff, "  :%02u:%02u %s", 
                           // dt.origin_hour,
                           dt.origin_minute,
@@ -676,15 +510,13 @@ void Display::print_edit_timer_type3(const TimerDateTime &dt, Clock::CLOCK_SUBST
                           dt.origin_month,
                           dt.origin_year % 100,
                           (dt.on ? "on " : "off"));
-        else
-        if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
+        else if (state == Clock::S_TIMER_TYPE2_EDIT_MONTHS)
             sprintf(buff, "%2u.  .%02u %s", 
                           dt.origin_day,
                           // dt.origin_month,
                           dt.origin_year % 100,
                           (dt.on ? "on " : "off"));
-        else
-        if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
+        else if (state == Clock::S_TIMER_TYPE2_EDIT_YEARS)
             sprintf(buff, "%2u.%02u.   %s", 
                       dt.origin_day,
                       dt.origin_month,

@@ -52,6 +52,9 @@ class Display {
         bool _blink() const;
         void _load_digit(uint8_t d, uint8_t p);
         void _blink_char();
+        // char _day_char(const AlarmDateTime &dt, uint8_t day_no);
+        char * _fill_str_with_day_names(const AlarmDateTime &dt, char *buff, uint8_t buff_offset);
+        char * _fill_str_with_day_names_blink(const AlarmDateTime &dt, char *buff, uint8_t buff_offset);
 };
 
 #endif // _DISPLAY_H_

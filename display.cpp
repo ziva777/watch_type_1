@@ -11,6 +11,26 @@ static const char *DAY_NAME[7] = {
     "Sa"
 };
 
+static const char SHORT_DAY_NAME_ON[7] = {
+    'S',
+    'M',
+    'T',
+    'W',
+    'T',
+    'F',
+    'S'
+};
+
+static const char SHORT_DAY_NAME_OFF[7] = {
+    's',
+    'm',
+    't',
+    'w',
+    't',
+    'f',
+    's'
+};
+
 static const uint8_t CAPITAL_PEH = 168;
 static const uint8_t CAPITAL_VEH =  66;
 static const uint8_t CAPITAL_ESS = 67;
@@ -22,8 +42,28 @@ static const uint8_t REH = 112;
 static const uint8_t BEH = 178;
 static const uint8_t ENN = 189;
 
+static const char RUS_SHORT_DAY_NAME_ON[7] = {
+    CAPITAL_VEH,
+    CAPITAL_PEH,
+    CAPITAL_VEH,
+    CAPITAL_ESS,
+    CAPITAL_CH,
+    CAPITAL_PEH,
+    CAPITAL_ESS
+};
+
+static const char RUS_SHORT_DAY_NAME_OFF[7] = {
+    179, //VEH,
+    190, //PEH,
+    179, //VEH,
+    'c', //ESS,
+    193, //CH,
+    190, //PEH,
+    'c'  //ESS
+};
+
 static const uint8_t *RUS_DAY_NAME[7][2] = {
-    {CAPITAL_VEH,  ESS},
+    {CAPITAL_VEH, ESS},
     {CAPITAL_PEH, ENN},
     {CAPITAL_VEH, TEH},
     {CAPITAL_ESS, REH},
@@ -262,6 +302,14 @@ void Display::_blink_char() {
     _lcd.setCursor(0, 1);
     _lcd.print((char)c);
     (c == 239 ? c = 238 : ++c);
+
+    // static uint8_t c = 180;
+    // _lcd.setCursor(0, 0);
+    // _lcd.print((char)c);
+    // (c == 255 ? c = 0 : ++c);
+
+    // _lcd.setCursor(0, 1);
+    // _lcd.print(c);
 }
 
 void Display::print_clock_time(const DateTime &dt) {
@@ -273,36 +321,9 @@ void Display::print_clock_time(const DateTime &dt) {
                   dt.second);
     print_text(0, 3, buff);
     _blink_char();
-    // static uint8_t c = 238;
-    // ++c;
-    // _lcd.setCursor(0, 0);
-    // _lcd.print((char)c);
-    // memset(buff, 0, sizeof(buff));
-    // sprintf(buff, "%3u", c);
-    // _lcd.setCursor(0, 1);
-    // _lcd.print(buff);
-
-    
-
-    // if (dt.second % 10)
-    //     ++c;
-    // memset(buff, 0, sizeof(buff));
-    // sprintf(buff, "%u   ", c++);
-    // _lcd.setCursor(0, 1);
-    // _lcd.print(buff);
-    // _lcd.setCursor(0, 0);
-    // _lcd.print((char)123);
 }
 
 void Display::print_clock_date(const DateTime &dt) {
-    // char buff[17];
-    // memset(buff, 0, sizeof(buff));
-    // sprintf(buff, "%2u.%02u.%04u %s", 
-    //               dt.day,
-    //               dt.month,
-    //               dt.year,
-    //               DAY_NAME[dt.day_of_week]);
-    // print_text(1, 3, buff);
     char buff[17];
     memset(buff, 0, sizeof(buff));
     sprintf(buff, "%2u.%02u.%04u %c%c", 
@@ -347,13 +368,13 @@ void Display::print_alarm_type3(const AlarmDateTime &dt) {
     print_text(0, 4, buff);
 
     memset(buff, ' ', 16);
-    buff[10 + 1] = (dt.days[0] ? 'S' : 's');
-    buff[ 4 + 1] = (dt.days[1] ? 'M' : 'm');
-    buff[ 5 + 1] = (dt.days[2] ? 'T' : 't');
-    buff[ 6 + 1] = (dt.days[3] ? 'W' : 'w');
-    buff[ 7 + 1] = (dt.days[4] ? 'T' : 't');
-    buff[ 8 + 1] = (dt.days[5] ? 'F' : 'f');
-    buff[ 9 + 1] = (dt.days[6] ? 'S' : 's');
+    buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
+    buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
+    buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
+    buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
+    buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
+    buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
+    buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
     print_text(1, 0, buff);
     _blink_char();
 }
@@ -580,30 +601,30 @@ void Display::print_edit_alarm_type3(const AlarmDateTime &dt, Clock::CLOCK_SUBST
 
     if (state == Clock::S_ALARM_TYPE2_EDIT_DAYS_OF_WEEK) {
         if (((millis() % 1000) < 250)) {
-            buff[10 + 1] = (dt.day_pointer == 0 ? ' ' : (dt.days[0] ? 'S' : 's'));
-            buff[ 4 + 1] = (dt.day_pointer == 1 ? ' ' : (dt.days[1] ? 'M' : 'm'));
-            buff[ 5 + 1] = (dt.day_pointer == 2 ? ' ' : (dt.days[2] ? 'T' : 't'));
-            buff[ 6 + 1] = (dt.day_pointer == 3 ? ' ' : (dt.days[3] ? 'W' : 'w'));
-            buff[ 7 + 1] = (dt.day_pointer == 4 ? ' ' : (dt.days[4] ? 'T' : 't'));
-            buff[ 8 + 1] = (dt.day_pointer == 5 ? ' ' : (dt.days[5] ? 'F' : 'f'));
-            buff[ 9 + 1] = (dt.day_pointer == 6 ? ' ' : (dt.days[6] ? 'S' : 's'));
+            buff[10 + 1] = (dt.day_pointer == 0 ? ' ' : (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]));
+            buff[ 4 + 1] = (dt.day_pointer == 1 ? ' ' : (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]));
+            buff[ 5 + 1] = (dt.day_pointer == 2 ? ' ' : (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]));
+            buff[ 6 + 1] = (dt.day_pointer == 3 ? ' ' : (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]));
+            buff[ 7 + 1] = (dt.day_pointer == 4 ? ' ' : (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]));
+            buff[ 8 + 1] = (dt.day_pointer == 5 ? ' ' : (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]));
+            buff[ 9 + 1] = (dt.day_pointer == 6 ? ' ' : (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]));
         } else {
-            buff[10 + 1] = (dt.days[0] ? 'S' : 's');
-            buff[ 4 + 1] = (dt.days[1] ? 'M' : 'm');
-            buff[ 5 + 1] = (dt.days[2] ? 'T' : 't');
-            buff[ 6 + 1] = (dt.days[3] ? 'W' : 'w');
-            buff[ 7 + 1] = (dt.days[4] ? 'T' : 't');
-            buff[ 8 + 1] = (dt.days[5] ? 'F' : 'f');
-            buff[ 9 + 1] = (dt.days[6] ? 'S' : 's');
+            buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
+            buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
+            buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
+            buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
+            buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
+            buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
+            buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
         }
     } else {
-            buff[10 + 1] = (dt.days[0] ? 'S' : 's');
-            buff[ 4 + 1] = (dt.days[1] ? 'M' : 'm');
-            buff[ 5 + 1] = (dt.days[2] ? 'T' : 't');
-            buff[ 6 + 1] = (dt.days[3] ? 'W' : 'w');
-            buff[ 7 + 1] = (dt.days[4] ? 'T' : 't');
-            buff[ 8 + 1] = (dt.days[5] ? 'F' : 'f');
-            buff[ 9 + 1] = (dt.days[6] ? 'S' : 's');
+            buff[10 + 1] = (dt.days[0] ? RUS_SHORT_DAY_NAME_ON[0] : RUS_SHORT_DAY_NAME_OFF[0]);
+            buff[ 4 + 1] = (dt.days[1] ? RUS_SHORT_DAY_NAME_ON[1] : RUS_SHORT_DAY_NAME_OFF[1]);
+            buff[ 5 + 1] = (dt.days[2] ? RUS_SHORT_DAY_NAME_ON[2] : RUS_SHORT_DAY_NAME_OFF[2]);
+            buff[ 6 + 1] = (dt.days[3] ? RUS_SHORT_DAY_NAME_ON[3] : RUS_SHORT_DAY_NAME_OFF[3]);
+            buff[ 7 + 1] = (dt.days[4] ? RUS_SHORT_DAY_NAME_ON[4] : RUS_SHORT_DAY_NAME_OFF[4]);
+            buff[ 8 + 1] = (dt.days[5] ? RUS_SHORT_DAY_NAME_ON[5] : RUS_SHORT_DAY_NAME_OFF[5]);
+            buff[ 9 + 1] = (dt.days[6] ? RUS_SHORT_DAY_NAME_ON[6] : RUS_SHORT_DAY_NAME_OFF[6]);
     }
     print_text(1, 0, buff);
 }

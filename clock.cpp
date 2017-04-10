@@ -276,7 +276,7 @@ void Clock::tick(uint16_t tick_size) {
             _timeshift_ticks = 0;
 
             if (_timeshift > 0)
-                tick_size += 100;
+                tick_size += Default::TICK_SIZE;
             else if (_timeshift < 0)
                 return;
         }
@@ -293,7 +293,8 @@ void Clock::tick(uint16_t tick_size) {
 
         if (alaram1_datetime.ringing) {
             alaram1_datetime.ringing = false;
-            tone(6, 440, 100);
+
+            tone(6, 440, 2000);
         }
     }
 

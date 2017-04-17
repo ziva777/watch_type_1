@@ -340,27 +340,26 @@ void Display::print_stopwatch(const StopwatchTime &t) {
 
     memset(buff, 0, 17);
     sprintf(buff, "%02u:%02u:%02u.%01u   ", 
-                  t.hour,
-                  t.minute,
-                  t.second,
-                  t.ms / 100);
+                  t.counter().hour(),
+                  t.counter().minute(),
+                  t.counter().second(),
+                  t.counter().ms() / 100);
     print_text(0, 3, buff);
 
     memset(buff, 0, 17);
 
-    if (!t.stamps[t.stamps_index_to_show].ready) {
+    if (!t.current_stamp().ready) {
         sprintf(buff, "   --:--:--.-  ");
     } else {
         sprintf(buff, "%2u %02u:%02u:%02u.%01u   ", 
-                      t.stamps_index_to_show + 1,
-                      t.stamps[t.stamps_index_to_show].hour,
-                      t.stamps[t.stamps_index_to_show].minute,
-                      t.stamps[t.stamps_index_to_show].second,
-                      t.stamps[t.stamps_index_to_show].ms / 100);
+                      t.current_stamp_index() + 1,
+                      t.current_stamp().lap_counter.hour(),
+                      t.current_stamp().lap_counter.minute(),
+                      t.current_stamp().lap_counter.second(),
+                      t.current_stamp().lap_counter.ms() / 100);
     }
       
     print_text(1, 0, buff);
-    _blink_char();
 }
 
 void Display::set_contrast(uint8_t contrast) {

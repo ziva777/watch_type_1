@@ -11,6 +11,7 @@ class StopwatchTimeTrigger {
         void ms_flip();
         void on_flip();
         void stoppped_flip();
+        void forced_flip();
 
         bool time_triggered() const;
 
@@ -20,6 +21,7 @@ class StopwatchTimeTrigger {
         bool ms_triggered() const;
         bool on_triggered() const;
         bool stoppped_triggered() const;
+        bool forced_triggered() const;
 
         void flop(); // flop all
 
@@ -30,6 +32,7 @@ class StopwatchTimeTrigger {
         bool _ms {false};
         bool _on {false};
         bool _stoppped {false};
+        bool _forced {false};
 };
 
 class AlarmDateTimeTrigger {

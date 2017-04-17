@@ -552,22 +552,19 @@ void ClockController::_process_FSM_logic() {
                     _clock.stopwatch.stamp_it();
                 } else 
                 if (_clock.stopwatch.on and _clock.stopwatch.stoppped) {
-                    if (_clock.stopwatch.stamps_index_to_show)
-                        --_clock.stopwatch.stamps_index_to_show;
+                    _clock.stopwatch.dec_current_stamp_index();
                 }
             } else
             if (_button3.pressed_hard()) {
                 if (_clock.stopwatch.on) {
                     if (_clock.stopwatch.stoppped) {
                         _clock.stopwatch.free_stamp();
-                        _clock.stopwatch.reset();
                     }
                 }
             } else
             if (_button4.pressed()) {
                 if (_clock.stopwatch.on and _clock.stopwatch.stoppped) {
-                    if (_clock.stopwatch.stamps_index_to_show < _clock.stopwatch.stamps_index - 1)
-                        ++_clock.stopwatch.stamps_index_to_show;
+                    _clock.stopwatch.inc_current_stamp_index();
                 }
             }
             break;

@@ -82,8 +82,8 @@ class TimerDateTime {
         uint8_t origin_minute {0};
         uint8_t origin_second {0};
 
-        uint16_t origin_day {Default::PrimaryClock::DAY};
-        uint16_t origin_month {Default::PrimaryClock::MONTH};
+        uint8_t origin_day {Default::PrimaryClock::DAY};
+        uint8_t origin_month {Default::PrimaryClock::MONTH};
         uint16_t origin_year {Default::PrimaryClock::YEAR};
 
         uint8_t hour {0};
@@ -128,9 +128,11 @@ class TimerDateTime {
         void launch_countdown1();
         void launch_countdown2(DateTime &dt);
         void launch_countdown3(DateTime &dt);
+
         void tick_countdown1(uint16_t tick_size);
         void tick_countdown2(const DateTime &dt, uint16_t tick_size);
         void tick_countdown3(const DateTime &dt, uint16_t tick_size);
+
         void reset_countdown();
 
         void resolve_febrary_collision();
@@ -147,40 +149,60 @@ class TimerDateTime {
 
 class StopwatchTime {
     public:
-        struct Stamp{
-            uint8_t hour {0};
-            uint8_t minute {0};
-            uint8_t second {0};
-            uint32_t ms {0};
-            bool ready {false};
+        class HMSm {
+            public:
+                uint8_t hour() const { return _hour; }
+                uint8_t minute() const { return _minute; }
+                uint8_t second() const { return _second; }
+                uint32_t ms() const { return _ms; }
+
+                void set_hour(uint8_t h) { _hour = h; }
+                void set_minute(uint8_t m) { _minute = m; }
+                void set_second(uint8_t s) { _second = s; }
+                void set_ms(uint32_t ms) { _ms = ms; }
+
+                void tick(uint16_t tick_size); // tick_size in mS
+                void reset();
+
+            private:
+                uint8_t _hour {0};
+                uint8_t _minute {0};
+                uint8_t _second {0};
+                uint32_t _ms {0};
         };
 
-        uint8_t hour {0};
-        uint8_t minute {0};
-        uint8_t second {0};
-        uint32_t ms {0};
+        struct HMSmStamp {
+            HMSm lap_counter;
+            bool ready {false};
+        };
 
         bool on {false};
         bool stoppped {false};
 
         StopwatchTimeTrigger trigger; // on change
 
-        // Lap counter
-        const uint8_t STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
-        Stamp stamps[Default::STOPWATCH_LAP_COUNT];
-        uint8_t stamps_index {0};
-        uint8_t stamps_index_to_show {0};
+        // Stopwatch counter
+        const HMSm & counter() const;
 
         void tick(uint16_t tick_size); // tick_size in mS
         void stamp_it(); // stamp current time in stamps var
         void free_stamp(); // reset stamps var
         void reset();
 
+        const HMSmStamp & current_stamp() const;
+        uint8_t current_stamp_index() const;
+        void inc_current_stamp_index();
+        void dec_current_stamp_index();
+
     private:
-        uint8_t _hour_buff {0};
-        uint8_t _minute_buff {0};
-        uint8_t _second_buff {0};
-        uint32_t _ms_buff {0};
+        // Lap counter
+        const uint8_t _STAMPS_COUNT {Default::STOPWATCH_LAP_COUNT};
+        uint8_t _stamps_index {0};
+        uint8_t _stamps_index_to_show {0};
+        HMSmStamp _stamps[Default::STOPWATCH_LAP_COUNT];
+
+        // Stopwatch counter
+        HMSm _counter;
 };
 
 #endif // _DATETIME_H_

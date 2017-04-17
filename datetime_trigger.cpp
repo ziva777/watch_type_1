@@ -24,6 +24,10 @@ void StopwatchTimeTrigger::stoppped_flip() {
     _stoppped = true;
 }
 
+void StopwatchTimeTrigger::forced_flip() {
+    _forced = true;
+}
+
 bool StopwatchTimeTrigger::hour_triggered() const {
     return _hour;
 }
@@ -48,11 +52,16 @@ bool StopwatchTimeTrigger::stoppped_triggered() const {
     return _stoppped;
 }
 
+bool StopwatchTimeTrigger::forced_triggered() const {
+    return _forced;
+}
+
 bool StopwatchTimeTrigger::time_triggered() const {
     return ms_triggered() or
             second_triggered() or 
             minute_triggered() or 
-            hour_triggered();
+            hour_triggered() or 
+            forced_triggered();
 }
 
 void StopwatchTimeTrigger::flop() {
@@ -62,6 +71,7 @@ void StopwatchTimeTrigger::flop() {
     _ms = false;
     _on = false;
     _stoppped = false;
+    _forced = false;
 }
 
 bool AlarmDateTimeTrigger::hour_triggered() const {
